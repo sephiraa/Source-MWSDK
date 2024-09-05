@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Fixed VGUI screens.
 //
 //===========================================================================//
 
@@ -297,6 +297,11 @@ public:
 
 	virtual void			Jump( void );
 	virtual void			Duck( void );
+
+	// VGUI.
+	bool					m_pVGUImode;
+	bool					GetVGUIMode(void) { return m_pVGUImode; }
+	void					SetVGUIMode(bool newmode) { m_pVGUImode = newmode; }
 
 	const char				*GetTracerType( void );
 	void					MakeTracer( const Vector &vecTracerSrc, const trace_t &tr, int iTracerType );

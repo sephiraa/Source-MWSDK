@@ -2,7 +2,7 @@
 //
 // Purpose: This is an entity that represents a vgui screen
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //===========================================================================//
 
 #include "cbase.h"
@@ -48,6 +48,9 @@ BEGIN_DATADESC( CVGuiScreen )
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "SetActive", InputSetActive ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "SetInactive", InputSetInactive ),
+
+	DEFINE_OUTPUT(Output1, "Output1"),
+	DEFINE_OUTPUT(Output2, "Output2"),
 
 END_DATADESC()
 

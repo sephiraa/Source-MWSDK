@@ -1,8 +1,9 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Base combat character with no AI
+//			Adds full holster sequence functionality.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #ifndef BASECOMBATCHARACTER_H
@@ -536,6 +537,9 @@ protected:
 	CNavArea *m_lastNavArea;
 	CAI_MoveMonitor m_NavAreaUpdateMonitor;
 	int m_registeredNavTeam;	// ugly, but needed to clean up player team counts in nav mesh
+
+public:
+	friend class CShowWeapon; // Addition.
 };
 
 

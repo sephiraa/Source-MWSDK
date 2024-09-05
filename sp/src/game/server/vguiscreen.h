@@ -2,7 +2,7 @@
 //
 // Purpose: This is an entity that represents a vgui screen
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #ifndef VGUISCREEN_H
@@ -59,6 +59,9 @@ public:
 
 	void SetPlayerOwner( CBasePlayer *pPlayer, bool bOwnerOnlyInput = false );
 
+	// Addition, can go up to 16.
+	COutputEvent Output1;
+	COutputEvent Output2;
 private:
 	void SetAttachmentIndex( int nIndex );
  	void SetPanelName( const char *pPanelName );

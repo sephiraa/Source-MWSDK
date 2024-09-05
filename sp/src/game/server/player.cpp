@@ -1,7 +1,7 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: Functions dealing with the player.
-//
+// Purpose: Functions dealing with the player. Check CheatImpulseCommands!
+//			Fixed broken VGUI screen functionality.
 //===========================================================================//
 
 #include "cbase.h"
@@ -69,6 +69,9 @@
 #include "dt_utlvector_send.h"
 #include "vote_controller.h"
 #include "ai_speech.h"
+
+// Addition.
+#include "vguiscreen.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_wearable.h"
@@ -5038,6 +5041,9 @@ void CBasePlayer::Spawn( void )
 	UpdateLastKnownArea();
 
 	m_weaponFiredTimer.Invalidate();
+
+	// Addition.
+	SetVGUIMode(false);
 }
 
 void CBasePlayer::Activate( void )
@@ -6148,9 +6154,19 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveAmmo( 5,	"grenade");
 		GiveAmmo( 32,	"357" );
 		GiveAmmo( 16,	"XBowBolt" );
+
 #ifdef HL2_EPISODIC
-		GiveAmmo( 5,	"Hopwire" );
-#endif		
+//		GiveAmmo( 5,	"Hopwire" ); // Commented out.
+#endif
+// ----------		
+// Additions.
+// ----------
+		GiveAmmo( 30, "SniperRound" );
+		GiveAmmo( 5, "SLAM" );
+		GiveAmmo( 5, "Molotov" );
+		GiveAmmo( 5, "Hopwire" );
+		GiveAmmo( 5, "FlareRound" );
+
 		GiveNamedItem( "weapon_smg1" );
 		GiveNamedItem( "weapon_frag" );
 		GiveNamedItem( "weapon_crowbar" );
@@ -6162,9 +6178,24 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_rpg" );
 		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "weapon_crossbow" );
+
 #ifdef HL2_EPISODIC
 		// GiveNamedItem( "weapon_magnade" );
 #endif
+// ----------
+// Additions.
+// ----------
+		GiveNamedItem( "weapon_sniperrifle" );
+		GiveNamedItem( "weapon_physgun" );
+		GiveNamedItem( "weapon_smg2" );
+		GiveNamedItem( "weapon_slam" );
+		GiveNamedItem( "weapon_molotov" );
+		GiveNamedItem( "weapon_hopwire" );
+		GiveNamedItem( "weapon_flaregun" );
+		GiveNamedItem( "weapon_cguard" );
+		GiveNamedItem( "weapon_immolator" );
+		GiveNamedItem( "weapon_extinguisher" );
+
 		if ( GetHealth() < 100 )
 		{
 			TakeHealth( 25, DMG_GENERIC );
@@ -6544,6 +6575,68 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		}
 		return true;
 	}
+	// Addition.
+	else if (stricmp(cmd, "vguimode_true") == 0)
+	{
+		SetVGUIMode(true);
+		return true;
+	}
+	else if (stricmp(cmd, "vguimode_false") == 0)
+	{
+		SetVGUIMode(false);
+		return true;
+	}
+// --------------------------
+// Can have up to 16 outputs.
+// --------------------------
+	else if (stricmp(cmd, "out1") == 0)
+	{
+		int entindex = atoi(args[1]);
+		if (entindex)
+		{
+			IHandleEntity* hEnt = gEntList.LookupEntityByNetworkIndex(entindex);
+			if (hEnt)
+			{
+				CVGuiScreen* screen = (CVGuiScreen*)gEntList.LookupEntity(hEnt->GetRefEHandle());
+				if (screen)
+				{
+					if (screen->entindex() == entindex)
+					{
+						screen->Output1.FireOutput(this, NULL);
+						return true;
+					}
+				}
+			}
+		}
+		else
+		{
+			Warning("No ent index specified for VGUI output\n");
+		}
+	}
+	else if (stricmp(cmd, "out2") == 0)
+	{
+		int entindex = atoi(args[1]);
+		if (entindex)
+		{
+			IHandleEntity* hEnt = gEntList.LookupEntityByNetworkIndex(entindex);
+			if (hEnt)
+			{
+				CVGuiScreen* screen = (CVGuiScreen*)gEntList.LookupEntity(hEnt->GetRefEHandle());
+				if (screen)
+				{
+					if (screen->entindex() == entindex)
+					{
+						screen->Output2.FireOutput(this, NULL);
+						return true;
+					}
+				}
+			}
+		}
+		else
+		{
+			Warning("No ent index specified for VGUI output\n");
+		}
+		}
 
 	return false;
 }

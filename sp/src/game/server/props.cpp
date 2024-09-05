@@ -2,6 +2,7 @@
 //
 // Purpose: static_prop - don't move, don't animate, don't do anything.
 //			physics_prop - move, take damage, but don't animate
+//			Fixed breakable props when launched by the Gravity Gun! -TheMaster974
 //
 //===========================================================================//
 
@@ -2757,8 +2758,18 @@ void CPhysicsProp::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t r
 		m_OnPhysGunPunt.FireOutput( pPhysGunUser, this );
 	}
 
+// ----------------------------------------------------------------------------
+// This change makes it so breakable props don't die when they are picked up
+// after being launched by the Gravity Gun, thanks to Tr0tim in the YT comments
+// for considering the player's use key interaction as well!
+// ----------------------------------------------------------------------------
 	if ( reason == PICKED_UP_BY_CANNON || reason == PICKED_UP_BY_PLAYER )
 	{
+		if (m_bFirstCollisionAfterLaunch)
+		{
+			PhysClearGameFlags(pPhysicsObject, FVPHYSICS_WAS_THROWN);
+			m_bFirstCollisionAfterLaunch = false;
+		}
 		m_OnPlayerPickup.FireOutput( pPhysGunUser, this );
 	}
 
