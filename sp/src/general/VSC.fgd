@@ -1,0 +1,127 @@
+// ------------------------------------------------------------
+// Add this to your Hammer configuration to use these entities.
+// ------------------------------------------------------------
+
+@ include "base.fgd"
+
+// -------
+// Physgun
+// -------
+
+@PointClass base(Weapon) studio("models/weapons/w_physics.mdl") = weapon_physgun : "Physgun" []
+
+// ------------
+// Sniper Rifle
+// ------------
+
+@PointClass base(Weapon) studio("models/weapons/w_sniper.mdl") = weapon_sniperrifle : "Sniper Rifle" []
+
+// -----------------
+// Combine Guard Gun
+// -----------------
+
+@PointClass base(Weapon) studio("models/weapons/w_guardgun.mdl") = weapon_cguard : "Combine Guard Gun" []
+
+// ---------------------------------
+// Mathematical function visualizer.
+// ---------------------------------
+
+@PointClass base(Targetname) = func_math : "Creates a mathematical function visualizer."
+[
+	sinCoefficient(float) : "sin Coefficient" : "10" : "The magnitude of the sin coefficient."
+	sinTimeCoefficient(float) : "sin Time Coefficient" : "1" : "The magnitude of the time coefficient within the sin function."
+	length(float) : "Length" : "512" : "The length of the visualizer, in world units."
+	phase(float) : "Phase" : "0" : "The amount of phase of the sin wave."
+
+	input AddA(void) : "Increases the sin coefficient."
+]
+
+// ------------------------------
+// Sustained firing laser weapon.
+// ------------------------------
+
+@PointClass base(Weapon) studio("models/weapons/w_gauss.mdl") = weapon_iontau : "Iontau" [] // Might want to change this model!
+
+// -------------------------------------------------------
+// Sphere of sprites with beam drawing between the points.
+// -------------------------------------------------------
+
+@PointClass base(Targetname, Parentname) sphere(radius) = func_sphere : "Creates a decorative sphere of sprites."
+[
+	radius(float) : "Radius" : "256" : "Radius of the sphere, in world units."
+]
+
+//-------------------------------------------------------------------------
+//
+// A Vgui screen in 3D, override the current entity.
+//
+//-------------------------------------------------------------------------
+
+@BaseClass base(Targetname, Parentname, Angles) = vgui_screen_base
+[
+	panelname(string) : "Panel Name"
+	overlaymaterial(string) : "Overlay Material" : "" : "Name of a material to overlay over the top of the VGUI screen. NOTE: This material must write Z for the VGUI screen to work."
+	width(integer) : "Panel Width in World" : 32 : "Width of the panel in units."
+	height(integer) : "Panel Height in World" : 32 : "Height of the panel in units."
+
+	// Inputs
+	input SetActive(void) : "Make the vgui screen visible."
+	input SetInactive(void) : "Make the vgui screen invisible."
+
+	// Addition, Outputs (can go up to 16)
+	output Output1(void) : "Fire output 1."
+	output Output2(void) : "Fire output 2."
+]
+
+@PointClass base(vgui_screen_base) size(-4 -4 -4, 4 4 4) = vgui_screen : 
+	"A VGUI screen. Useful for in-world monitors." 
+[
+]
+
+// ------------------------
+// SMG2 (burst fire weapon)
+// ------------------------
+
+@PointClass base(Weapon) studio("models/weapons/w_smg2.mdl") = weapon_smg2 : "SMG2" []
+
+// ----
+// SLAM
+// ----
+
+@PointClass base(Weapon) studio("models/weapons/w_slam.mdl") = weapon_slam : "SLAM" []
+
+// -------
+// Molotov
+// -------
+
+@PointClass base(Weapon) studio("models/weapons/w_molotov.mdl") = weapon_molotov : "Molotov" []
+
+// ----------------------------
+// Hopwire (black hole grenade)
+// ----------------------------
+
+@PointClass base(Weapon) studio("models/weapons/w_frag.mdl") = weapon_hopwire : "Black Hole Grenade" []
+
+// -----------------------------------------------
+// Super Mario 64 floor check function immitation.
+// -----------------------------------------------
+
+@PointClass base(Targetname) = mario64floorchecker : "Creates an entity that checks where the player is within a 256x256 square centered on the origin." []
+
+// --------
+// Flaregun
+// --------
+
+@PointClass base(Weapon) studio("models/weapons/w_flaregun.mdl") = weapon_flaregun : "Flaregun" []
+
+// -----------------
+// Fire Extinguisher
+// -----------------
+
+@PointClass base(Weapon) studio("models/weapons/w_fire_extinguisher.mdl") = weapon_extinguisher : "Fire Extinguisher" []
+
+// ---------
+// Immolator
+// ---------
+
+@PointClass base(Weapon) studio("models/weapons/w_immolator.mdl") = weapon_immolator : "Immolator" []
