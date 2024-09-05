@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Fixed broken VGUI screens.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 #include "cbase.h"
 #include "c_basehlplayer.h"
@@ -622,11 +622,11 @@ void C_BaseHLPlayer::PerformClientSideNPCSpeedModifiers( float flFrameTime, CUse
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Input handling
+// Purpose: Input handling, modified to fix broken VGUI screens.
 //-----------------------------------------------------------------------------
-bool C_BaseHLPlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
+bool C_BaseHLPlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd, bool bVguiUpdate )
 {
-	bool bResult = BaseClass::CreateMove( flInputSampleTime, pCmd );
+	bool bResult = BaseClass::CreateMove( flInputSampleTime, pCmd, bVguiUpdate );
 
 	if ( !IsInAVehicle() )
 	{
@@ -637,6 +637,11 @@ bool C_BaseHLPlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 	return bResult;
 }
 
+// Addition.
+bool C_BaseHLPlayer::CreateMove(float flInputSampleTime, CUserCmd* cmd)
+{
+	return CreateMove(flInputSampleTime, cmd, false);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Input handling

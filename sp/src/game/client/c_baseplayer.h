@@ -132,6 +132,9 @@ public:
 	// Input handling
 	virtual bool	CreateMove( float flInputSampleTime, CUserCmd *pCmd );
 	virtual void	AvoidPhysicsProps( CUserCmd *pCmd );
+
+	// Addition.
+	virtual bool	CreateMove(float flInputSampleTime, CUserCmd* cmd, bool bVguiUpdate);
 	
 	virtual void	PlayerUse( void );
 	CBaseEntity		*FindUseEntity( void );

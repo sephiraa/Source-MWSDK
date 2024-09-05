@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Fixed functionality of VGUI screens.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -38,8 +38,8 @@ extern vgui::IInputInternal *g_InputInternal;
 #define VGUI_SCREEN_MODE_RADIUS	80
 
 //Precache the materials
-CLIENTEFFECT_REGISTER_BEGIN( PrecacheEffectVGuiScreen )
-CLIENTEFFECT_MATERIAL( "engine/writez" )
+CLIENTEFFECT_REGISTER_BEGIN(PrecacheEffectVGuiScreen)
+CLIENTEFFECT_MATERIAL("engine/writez")
 CLIENTEFFECT_REGISTER_END()
 
 
@@ -47,6 +47,7 @@ CLIENTEFFECT_REGISTER_END()
 // This is a cache of preloaded keyvalues.
 // ----------------------------------------------------------------------------- // 
 
+CUtlVector<C_VGuiScreen*> g_pVGUIScreens;
 CUtlDict<KeyValues*, int> g_KeyValuesCache;
 
 KeyValues* CacheKeyValuesForFile( const char *pFilename )
@@ -102,11 +103,17 @@ C_VGuiScreen::C_VGuiScreen()
 
 	m_WriteZMaterial.Init( "engine/writez", TEXTURE_GROUP_VGUI );
 	m_OverlayMaterial.Init( m_WriteZMaterial );
+
+	// Addition.
+	g_pVGUIScreens.AddToTail(this);
 }
 
 C_VGuiScreen::~C_VGuiScreen()
 {
 	DestroyVguiScreen();
+
+	// Addition.
+	g_pVGUIScreens.FindAndRemove(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -445,6 +452,25 @@ void C_VGuiScreen::ClientThink( void )
 		g_InputInternal->InternalMouseReleased( MOUSE_RIGHT );
 	}
 
+	for (int i = 0; i < pPanel->GetChildCount(); i++)
+	{
+		vgui::Button* child = dynamic_cast<vgui::Button*>(pPanel->GetChild(i));
+		if (child)
+		{
+			int x1, x2, y1, y2;
+			child->GetBounds(x1, y1, x2, y2);
+
+			// Generate mouse input commands.
+			if (m_nButtonState & IN_ATTACK)
+			{
+				if (px >= x1 && px <= x1 + x2 && py >= y1 && py <= y1 + y2)
+				{
+					child->FireActionSignal();
+				}
+			}
+		}
+	}
+
 	if ( m_bLoseThinkNextFrame == true )
 	{
 		m_bLoseThinkNextFrame = false;
@@ -704,17 +730,26 @@ C_BaseEntity *FindNearbyVguiScreen( const Vector &viewPosition, const QAngle &vi
 	Ray_t lookRay;
 	lookRay.Init( viewPosition, lookEnd );
 
+// -------------------------------
+// Removed, as this is not needed.
+// -------------------------------
 	// Look for vgui screens that are close to the player
-	CVGuiScreenEnumerator localScreens;
-	partition->EnumerateElementsInSphere( PARTITION_CLIENT_NON_STATIC_EDICTS, viewPosition, VGUI_SCREEN_MODE_RADIUS, false, &localScreens );
+//	CVGuiScreenEnumerator localScreens;
+//	partition->EnumerateElementsInSphere(PARTITION_CLIENT_NON_STATIC_EDICTS, viewPosition, VGUI_SCREEN_MODE_RADIUS, false, &localScreens);
 
 	Vector vecOut, vecViewDelta;
 
 	float flBestDist = 2.0f;
 	C_VGuiScreen *pBestScreen = NULL;
-	for (int i = localScreens.GetScreenCount(); --i >= 0; )
+
+// ------------------------------------------
+// Modified to fix VGUI screen functionality.
+// ------------------------------------------
+//	for (int i = localScreens.GetScreenCount(); --i >= 0; )
+	for (int i = 0; i < g_pVGUIScreens.Count(); i++)
 	{
-		C_VGuiScreen *pScreen = localScreens.GetVGuiScreen(i);
+//		C_VGuiScreen *pScreen = localScreens.GetVGuiScreen(i);
+		C_VGuiScreen* pScreen = g_pVGUIScreens[i];
 
 		if ( pScreen->IsAttachedToViewModel() )
 			continue;
@@ -867,6 +902,21 @@ vgui::Panel *CVGuiScreenPanel::CreateControlByName(const char *controlName)
 //-----------------------------------------------------------------------------
 void CVGuiScreenPanel::OnCommand( const char *command)
 {
+	// Addition, can have up to 16.
+	if (stricmp(command, "out1") == 0
+		|| stricmp(command, "out2") == 0)
+	{
+		char entindex[8];
+		itoa(this->GetEntity()->entindex(), entindex, 10); // Radix is base 10 (decimal)
+		char newcommand[16] = { ' ' };
+		strcat(newcommand, command);
+		strcat(newcommand, " ");
+		strcat(newcommand, entindex);
+		engine->ClientCmd_Unrestricted(const_cast<char*>(newcommand));
+		BaseClass::OnCommand(newcommand);
+		return;
+	}
+
 	if ( Q_stricmp( command, "vguicancel" ) )
 	{
 		engine->ClientCmd( const_cast<char *>( command ) );

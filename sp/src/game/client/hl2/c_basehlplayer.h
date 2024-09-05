@@ -1,9 +1,9 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Fixed VGUI functionality.
 //
 // $Workfile:     $
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #if !defined( C_BASEHLPLAYER_H )
@@ -52,6 +52,8 @@ public:
 
 	bool				IsWeaponLowered( void ) { return m_HL2Local.m_bWeaponLowered; }
 
+	// Addition.
+	virtual bool	CreateMove(float flInputSampleTime, CUserCmd *cmd, bool bVguiUpdate);
 public:
 
 	C_HL2PlayerLocalData		m_HL2Local;

@@ -1,8 +1,9 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Defines the client-side representation of CBaseCombatCharacter.
+//			Adds full holster sequence functionality.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #ifndef C_BASECOMBATCHARACTER_H
@@ -157,6 +158,7 @@ public:
 	int				m_iPrevPowerups;
 #endif
 
+	friend class C_ShowWeapon; // Addition.
 };
 
 inline C_BaseCombatCharacter *ToBaseCombatCharacter( C_BaseEntity *pEntity )

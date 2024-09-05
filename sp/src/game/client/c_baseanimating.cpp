@@ -2,7 +2,7 @@
 //
 // Purpose: 
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //===========================================================================//
 #include "cbase.h"
 #include "c_baseanimating.h"
@@ -3309,6 +3309,25 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
 		//FIXME: We should really use a named attachment for this
 		if ( m_Attachments.Count() > 0 )
 		{
+// ------------------
+// Modified function.
+// ------------------
+			Vector vAttachment, vAng; // Get the origin of the muzzle flash.
+			QAngle angles; // Get the angles of the muzzle flash.
+			GetAttachment(1, vAttachment, angles);
+			AngleVectors(angles, &vAng);
+			vAttachment += vAng * 2;
+
+			dlight_t* dl = effects->CL_AllocDlight(index); // Create a dynamic light and give it some properties.
+			dl->origin = vAttachment; // Position.
+			dl->color.r = 255; // Red.
+			dl->color.g = 192; // Green.
+			dl->color.b = 64; // Blue.
+			dl->die = gpGlobals->curtime + 0.05f; // Stop after this time.
+			dl->radius = random->RandomFloat(245.0f, 256.0f); // How large is the dynamic light?
+			dl->decay = 512.0f; // Drop this much each second.
+
+			/*
 			Vector vAttachment;
 			QAngle dummyAngles;
 			GetAttachment( 1, vAttachment, dummyAngles );
@@ -3323,6 +3342,7 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
 			el->color.g = 192;
 			el->color.b = 64;
 			el->color.exponent = 5;
+			*/
 		}
 	}
 }
