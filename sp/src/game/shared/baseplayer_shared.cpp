@@ -1,8 +1,9 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Implements shared baseplayer class functionality
+//			Adds pause menu music, if you want that!
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -228,6 +229,34 @@ bool CBasePlayer::UsingStandardWeaponsInVehicle( void )
 void CBasePlayer::ItemPostFrame()
 {
 	VPROF( "CBasePlayer::ItemPostFrame" );
+
+// ----------------------------------------------------------------------
+// Pause Menu Music, replace music/hl2_song30.mp3 with whatever you want!
+// ----------------------------------------------------------------------
+#ifndef CLIENT_DLL
+	enginesound->PrecacheSound("music/hl2_song30.mp3", true); // Precache sound.
+	static bool playMusic = false; // Has the music started to play?
+
+// ---------------------------------------------------------------------
+// Play music when the game is paused, only seems to work on the Server.
+// ---------------------------------------------------------------------
+	if (engine->IsPaused())
+	{
+		if (!playMusic) // Play the music clip once!
+		{
+			// Uncomment if you want pause menu music!
+//			engine->ClientCommand(edict(), "play music/hl2_song30.mp3");
+			playMusic = true;
+		}
+	}
+	else // Stop the music!
+	{
+		if (playMusic)
+			engine->ClientCommand(edict(), "stopsound");
+
+		playMusic = false;
+	}
+#endif
 
 	// Put viewmodels into basically correct place based on new player origin
 	CalcViewModelView( EyePosition(), EyeAngles() );

@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Adds full holster sequence.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -59,7 +59,7 @@ bool CBaseCombatCharacter::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmo
 			return false;
 	}
 
-	m_hActiveWeapon = pWeapon;
+//	m_hActiveWeapon = pWeapon; // Commented out.
 
 	return pWeapon->Deploy( );
 }

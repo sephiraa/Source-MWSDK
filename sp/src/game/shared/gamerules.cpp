@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Modified to allow the FOV to be increased to 120.
 //
 //=============================================================================//
 
@@ -859,7 +859,7 @@ void CGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 	if ( pszFov )
 	{
 		int iFov = atoi(pszFov);
-		iFov = clamp( iFov, 75, 90 );
+		iFov = clamp( iFov, 75, 120 ); // Formerly 90.
 		pPlayer->SetDefaultFOV( iFov );
 	}
 

@@ -1,8 +1,9 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Definitions that are shared by the game DLL and the client DLL.
+//			Increased MAX_FOV to 120.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #ifndef SHAREDDEFS_H
@@ -232,7 +233,7 @@ enum CastVote
 
 #define MAX_PLACE_NAME_LENGTH		18
 
-#define MAX_FOV						90
+#define MAX_FOV						120 // Formerly 90.
 
 //===================================================================================================================
 // Team Defines
