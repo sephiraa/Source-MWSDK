@@ -142,6 +142,9 @@ CWeaponSMG1::CWeaponSMG1( )
 	m_fMaxRange1		= 1400;
 
 	m_bAltFiresUnderwater = false;
+
+	// Uncomment this if you want the SMG1 to have burst fire functionality.
+	// m_iFireMode = FIREMODE_3RNDBURST;
 }
 
 //-----------------------------------------------------------------------------
@@ -283,6 +286,14 @@ Activity CWeaponSMG1::GetPrimaryAttackActivity( void )
 //-----------------------------------------------------------------------------
 bool CWeaponSMG1::Reload( void )
 {
+// ----------------------------------------------------------------
+// Uncomment if you want the SMG1 to have burst fire functionality. 
+// ----------------------------------------------------------------
+	/*
+	if (m_iBurstSize > 0)
+		return false;
+	*/
+
 	bool fRet;
 	float fCacheTime = m_flNextSecondaryAttack;
 

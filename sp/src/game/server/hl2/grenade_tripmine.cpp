@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: Implements the tripmine grenade.
+// Purpose: Implements the tripmine grenade. Fixed floating Tripmine bug.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -11,6 +11,7 @@
 #include "grenade_tripmine.h"
 #include "vstdlib/random.h"
 #include "engine/IEngineSound.h"
+#include "explode.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -35,10 +36,10 @@ BEGIN_DATADESC( CTripmineGrenade )
 	DEFINE_FIELD( m_angleOwner,	FIELD_VECTOR ),
 
 	// Function Pointers
-	DEFINE_FUNCTION( WarningThink ),
-	DEFINE_FUNCTION( PowerupThink ),
-	DEFINE_FUNCTION( BeamBreakThink ),
-	DEFINE_FUNCTION( DelayDeathThink ),
+	DEFINE_THINKFUNC( WarningThink ),
+	DEFINE_THINKFUNC( PowerupThink ),
+	DEFINE_THINKFUNC( BeamBreakThink ),
+	DEFINE_THINKFUNC( DelayDeathThink ),
 
 END_DATADESC()
 
@@ -56,13 +57,24 @@ void CTripmineGrenade::Spawn( void )
 	// motor
 	SetMoveType( MOVETYPE_FLY );
 	SetSolid( SOLID_BBOX );
-	AddSolidFlags( FSOLID_NOT_SOLID );
 	SetModel( "models/Weapons/w_slam.mdl" );
 
+    IPhysicsObject *pObject = VPhysicsInitNormal( SOLID_BBOX, GetSolidFlags() | FSOLID_TRIGGER, true );
+	pObject->EnableMotion( false );
+	SetCollisionGroup( COLLISION_GROUP_WEAPON );
 
-	m_flCycle		= 0;
+	SetCycle( 0.0f );
 	m_nBody			= 3;
-	m_flDamage		= sk_plr_dmg_tripmine.GetFloat();
+
+// ----------------------------------------------------------------------
+// Modified so the Tripmine does different damage dependent on the owner.
+// ----------------------------------------------------------------------
+	// m_flDamage		= sk_plr_dmg_tripmine.GetFloat();
+	if (GetOwnerEntity() && GetOwnerEntity()->IsPlayer())
+		m_flDamage = sk_plr_dmg_tripmine.GetFloat();
+	else
+		m_flDamage = sk_npc_dmg_tripmine.GetFloat();
+
 	m_DmgRadius		= sk_tripmine_radius.GetFloat();
 
 	ResetSequenceInfo( );
@@ -72,21 +84,25 @@ void CTripmineGrenade::Spawn( void )
 
 	m_flPowerUp = gpGlobals->curtime + 2.0;
 	
-	SetThink( PowerupThink );
+	SetThink( &CTripmineGrenade::PowerupThink );
 	SetNextThink( gpGlobals->curtime + 0.2 );
 
 	m_takedamage		= DAMAGE_YES;
 
 	m_iHealth = 1;
 
-	EmitSound( "TripmineGrenade.Charge" );
+	EmitSound( "TripmineGrenade.Place" );
+	SetDamage ( 200 );
 
 	// Tripmine sits at 90 on wall so rotate back to get m_vecDir
-	QAngle angles = GetLocalAngles();
+	QAngle angles = GetAbsAngles();
 	angles.x -= 90;
 
 	AngleVectors( angles, &m_vecDir );
-	m_vecEnd = GetLocalOrigin() + m_vecDir * 2048;
+	m_vecEnd = GetAbsOrigin() + m_vecDir * 2048;
+
+	AddEffects( EF_NOSHADOW );
+	m_pAttachedObject = NULL; // Addition.
 }
 
 
@@ -94,19 +110,15 @@ void CTripmineGrenade::Precache( void )
 {
 	PrecacheModel("models/Weapons/w_slam.mdl"); 
 
-	PrecacheScriptSound( "TripmineGrenade.Charge" );
-	PrecacheScriptSound( "TripmineGrenade.PowerUp" );
-	PrecacheScriptSound( "TripmineGrenade.StopSound" );
+	PrecacheScriptSound( "TripmineGrenade.Place" );
 	PrecacheScriptSound( "TripmineGrenade.Activate" );
-	PrecacheScriptSound( "TripmineGrenade.ShootRope" );
-	PrecacheScriptSound( "TripmineGrenade.Hook" );
 }
 
 
 void CTripmineGrenade::WarningThink( void  )
 {
 	// set to power up
-	SetThink( PowerupThink );
+	SetThink( &CTripmineGrenade::PowerupThink );
 	SetNextThink( gpGlobals->curtime + 1.0f );
 }
 
@@ -120,7 +132,7 @@ void CTripmineGrenade::PowerupThink( void  )
 		m_bIsLive			= true;
 
 		// play enabled sound
-		EmitSound( "TripmineGrenade.PowerUp" );;
+		EmitSound( "TripmineGrenade.Activate" );
 	}
 	SetNextThink( gpGlobals->curtime + 0.1f );
 }
@@ -163,19 +175,26 @@ void CTripmineGrenade::MakeBeam( void )
 	}
 
 	// set to follow laser spot
-	SetThink( BeamBreakThink );
+	SetThink( &CTripmineGrenade::BeamBreakThink );
 
 	// Delay first think slightly so beam has time
 	// to appear if person right in front of it
 	SetNextThink( gpGlobals->curtime + 1.0f );
 
-	Vector vecTmpEnd = GetLocalOrigin() + m_vecDir * 2048 * drawLength;
+// -----------------------------------------------------------------------
+// Changed GetLocalOrigin() to GetAbsOrigin() so the beam draws correctly.
+// ----------------------------------------------------------------------- 
+//	Vector vecTmpEnd = GetLocalOrigin() + m_vecDir * 2048 * drawLength;
+	Vector vecTmpEnd = GetAbsOrigin() + m_vecDir * 2048 * drawLength;
 
-	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 1.0 );
+	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 0.35 );
 	m_pBeam->PointEntInit( vecTmpEnd, this );
-	m_pBeam->SetColor( 0, 214, 198 );
+	m_pBeam->SetColor( 255, 55, 52 );
 	m_pBeam->SetScrollRate( 25.6 );
 	m_pBeam->SetBrightness( 64 );
+	
+	int beamAttach = LookupAttachment("beam_attach");
+	m_pBeam->SetEndAttachment( beamAttach );
 }
 
 
@@ -221,22 +240,71 @@ void CTripmineGrenade::BeamBreakThink( void  )
 		return;
 	}
 
-	SetNextThink( gpGlobals->curtime + 0.1f );
+// ---------------------------------------------------------------------------
+// Detonate if the parent object moves or the prop_dynamic's sequence changes.
+// ---------------------------------------------------------------------------
+	if (m_pAttachedObject)
+	{
+		if(!m_pAttachedObject->ClassMatches("prop_dynamic"))
+		{
+		if(!VectorsAreEqual(m_vecOldPosAttachedObject, m_pAttachedObject->GetAbsOrigin(), 1.0f)
+			|| !QAnglesAreEqual(m_vecOldAngAttachedObject, m_pAttachedObject->GetAbsAngles(), 1.0f)
+			|| m_pAttachedObject->IsSolidFlagSet(FSOLID_NOT_SOLID))
+			{
+				m_iHealth = 0;
+				Event_Killed(CTakeDamageInfo((CBaseEntity*)m_hOwner, this, 100, GIB_NORMAL));
+				return;
+			}
+		}
+		else
+		{
+			if (m_pAttachedSequence != m_pAttachedObject->GetBaseAnimating()->GetSequence()
+				&& m_pAttachedSequence != m_pAttachedObject->GetBaseAnimating()->LookupSequence("idle")
+				|| !VectorsAreEqual(m_vecOldPosAttachedObject, m_pAttachedObject->GetAbsOrigin(), 1.0f)
+				|| !QAnglesAreEqual(m_vecOldAngAttachedObject, m_pAttachedObject->GetAbsAngles(), 1.0f))
+			{
+				if (!m_pAttachedObject->GetBaseAnimating()->IsSequenceFinished())
+				{
+					m_iHealth = 0;
+					Event_Killed(CTakeDamageInfo((CBaseEntity*)m_hOwner, this, 100, GIB_NORMAL));
+					return;
+				}
+			}
+		}
+	}
+
+	SetNextThink( gpGlobals->curtime + 0.05f );
 }
 
+// ----------------------------------------------------
+// Attach the Tripmine to the entity we are looking at.
+// ----------------------------------------------------
+void CTripmineGrenade::AttachToEntity(CBaseEntity* ent)
+{
+	Assert(m_pAttachedObject == NULL);
+	m_pAttachedObject = ent;
+	m_vecOldPosAttachedObject = ent->GetAbsOrigin();
+	m_vecOldAngAttachedObject = ent->GetAbsAngles();
+
+	if (m_pAttachedObject->ClassMatches("prop_dynamic"))
+		m_pAttachedSequence = ent->GetBaseAnimating()->GetSequence();
+}
+
+#if 0 // FIXME: OnTakeDamage_Alive() is no longer called now that base grenade derives from CBaseAnimating
 int CTripmineGrenade::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 {
 	if (gpGlobals->curtime < m_flPowerUp && info.GetDamage() < m_iHealth)
 	{
 		// disable
 		// Create( "weapon_tripmine", GetLocalOrigin() + m_vecDir * 24, GetAngles() );
-		SetThink( SUB_Remove );
+		SetThink( &CTripmineGrenade::SUB_Remove );
 		SetNextThink( gpGlobals->curtime + 0.1f );
 		KillBeam();
 		return FALSE;
 	}
 	return BaseClass::OnTakeDamage_Alive( info );
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -247,8 +315,8 @@ void CTripmineGrenade::Event_Killed( const CTakeDamageInfo &info )
 {
 	m_takedamage		= DAMAGE_NO;
 
-	SetThink( DelayDeathThink );
-	SetNextThink( gpGlobals->curtime + 0.5 );
+	SetThink( &CTripmineGrenade::DelayDeathThink );
+	SetNextThink( gpGlobals->curtime + 0.25 );
 
 	EmitSound( "TripmineGrenade.StopSound" );
 }
@@ -261,6 +329,49 @@ void CTripmineGrenade::DelayDeathThink( void )
 	UTIL_TraceLine ( GetAbsOrigin() + m_vecDir * 8, GetAbsOrigin() - m_vecDir * 64,  MASK_SOLID, this, COLLISION_GROUP_NONE, & tr);
 	UTIL_ScreenShake( GetAbsOrigin(), 25.0, 150.0, 1.0, 750, SHAKE_START );
 
-	Explode( &tr, DMG_BLAST );
+	ExplosionCreate( GetAbsOrigin() + m_vecDir * 8, GetAbsAngles(), m_hOwner, GetDamage(), 200, 
+		SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, this);
+
+	UTIL_Remove( this );
 }
 
+// --------------------------------------------------
+// This allows players to pick up deployed Tripmines.
+// --------------------------------------------------
+void CTripmineGrenade::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (useType == USE_TOGGLE)
+	{
+		CBasePlayer* pPlayer = ToBasePlayer(pActivator);
+		if (pPlayer)
+		{
+			if (pPlayer->GetAmmoCount("SLAM") < 5) // sk_max_slam.GetInt()
+			{
+				// Remove the Tripmine and give ammo back to the player.
+				if (m_pBeam)
+				{
+					UTIL_Remove(m_pBeam);
+					m_pBeam = NULL;
+				}
+				if (pPlayer->HasNamedPlayerItem("weapon_slam"))
+					pPlayer->GiveAmmo(1, "SLAM"); // Give the player SLAM ammo if they already have the SLAM.
+				else
+					pPlayer->GiveNamedItem("weapon_slam"); // Otherwise, give the player the SLAM!
+
+				UTIL_Remove(this);
+				return;
+			}
+		}
+	}
+	BaseClass::Use(pActivator, pCaller, useType, value);
+}
+
+// --------------------------------------------------------------------------------------------
+// This destroys the Tripmine if the player attempts to pick it up with the Physcannon/Physgun.
+// --------------------------------------------------------------------------------------------
+void CTripmineGrenade::OnPhysGunPickup(CBasePlayer* pPhysGunUser, PhysGunPickup_t reason)
+{
+	m_iHealth = 0;
+	Event_Killed(CTakeDamageInfo((CBaseEntity*)m_hOwner, this, 100, GIB_NORMAL));
+	BaseClass::OnPhysGunPickup(pPhysGunUser, reason);
+}

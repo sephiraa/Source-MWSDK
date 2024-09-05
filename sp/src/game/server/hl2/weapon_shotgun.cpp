@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: A shotgun.
+// Purpose: A shotgun. Adds fix for full holster sequence.
 //
 //			Primary attack: single barrel shot.
 //			Secondary attack: double barrel shot.
@@ -697,6 +697,7 @@ void CWeaponShotgun::ItemPostFrame( void )
 			// weapon isn't useable, switch.
 			if ( !(GetWeaponFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY) && pOwner->SwitchToNextBestWeapon( this ) )
 			{
+				pOwner->ClearActiveWeapon(); // For full holster sequence.
 				m_flNextPrimaryAttack = gpGlobals->curtime + 0.3;
 				return;
 			}

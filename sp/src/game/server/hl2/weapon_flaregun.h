@@ -1,7 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:		Flare gun (fffsssssssssss!!)
 //
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "basehlcombatweapon.h"

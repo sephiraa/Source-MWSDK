@@ -4,7 +4,7 @@
 //
 // $Workfile:     $
 // $Date:         $
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -21,20 +21,22 @@
 #include	"game.h"			
 #include "vstdlib/random.h"
 #include "movevars_shared.h"
+#include "gamestats.h" // Addition.
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 BEGIN_DATADESC( CWeaponMolotov )
 
-	DEFINE_FIELD( m_nNumAmmoTypes, FIELD_INTEGER ),
-	DEFINE_FIELD( m_bNeedDraw, FIELD_BOOLEAN ),
-	DEFINE_FIELD( m_iThrowBits, FIELD_INTEGER ),
-	DEFINE_FIELD( m_fNextThrowCheck, FIELD_TIME ),
+//	DEFINE_FIELD( m_nNumAmmoTypes, FIELD_INTEGER ),
+//	DEFINE_FIELD( m_bNeedDraw, FIELD_BOOLEAN ),
+//	DEFINE_FIELD( m_iThrowBits, FIELD_INTEGER ),
+//	DEFINE_FIELD( m_fNextThrowCheck, FIELD_TIME ),
+	DEFINE_FIELD( m_bRedraw, FIELD_BOOLEAN ), // Addition.
 	DEFINE_FIELD( m_vecTossVelocity, FIELD_VECTOR ),
 
 	// Function Pointers
-	DEFINE_FUNCTION( MolotovTouch ),
+//	DEFINE_FUNCTION( MolotovTouch ),
 
 END_DATADESC()
 
@@ -54,7 +56,9 @@ IMPLEMENT_ACTTABLE(CWeaponMolotov);
 
 void CWeaponMolotov::Precache( void )
 {
-	PrecacheModel("models/props_junk/w_garb_beerbottle.mdl");	//<<TEMP>> need real model
+//	PrecacheModel("models/props_junk/w_garb_beerbottle.mdl");	//<<TEMP>> need real model
+	PrecacheModel("models/weapons/w_molotov.mdl");
+	UTIL_PrecacheOther("grenade_molotov"); // Addition.
 	BaseClass::Precache();
 }
 
@@ -63,12 +67,12 @@ void CWeaponMolotov::Spawn( void )
 	// Call base class first
 	BaseClass::Spawn();
 
-	m_bNeedDraw		= true;
+//	m_bNeedDraw		= true;
 
-	SetModel( GetWorldModel() );
-	UTIL_SetSize(this, Vector( -6, -6, -2), Vector(6, 6, 2));
+//	SetModel( GetWorldModel() );
+//	UTIL_SetSize(this, Vector( -6, -6, -2), Vector(6, 6, 2));
 }
-
+/*
 //------------------------------------------------------------------------------
 // Purpose : Override to use molotovs pickup touch function
 // Input   :
@@ -78,7 +82,8 @@ void CWeaponMolotov::SetPickupTouch( void )
 {
 	SetTouch(MolotovTouch);
 }
-
+*/
+/*
 //-----------------------------------------------------------------------------
 // Purpose: Override so give correct ammo
 // Input  : pOther - the entity that touched me
@@ -112,7 +117,7 @@ void CWeaponMolotov::MolotovTouch( CBaseEntity *pOther )
 		}
 	}
 }
-
+*/
 //-----------------------------------------------------------------------------
 // Purpose: Gets event from anim stream and throws the object
 // Input  :
@@ -120,10 +125,19 @@ void CWeaponMolotov::MolotovTouch( CBaseEntity *pOther )
 //-----------------------------------------------------------------------------
 void CWeaponMolotov::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator )
 {
+// ------------------
+// Modified function.
+// ------------------
+	CBasePlayer* pOwner = ToBasePlayer(GetOwner()); // Find the player.
+	bool fThrewMolotov = false; // Has the molotov been thrown?
 	switch( pEvent->event )
 	{
 		case EVENT_WEAPON_THROW:
-		{
+			ThrowMolotov(pOwner); // Throw the molotov!
+			pOwner->RemoveAmmo(1, m_iSecondaryAmmoType); // Subtract 1 from the ammo count.
+			fThrewMolotov = true; // The molotov has been thrown!
+			break;
+		/*
 			CAI_BaseNPC *pNPC	= GetOwner()->MyNPCPointer();
 			if (!pNPC)
 			{
@@ -166,15 +180,18 @@ void CWeaponMolotov::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatC
 			// Drop the weapon and remove as no more ammo
 			pNPC->Weapon_Drop( this );
 			UTIL_Remove( this );
-		}
-		break;
+		*/
 		default:
 			BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
 			break;
 	}
+
+#define RETHROW_DELAY 1.0f; // Arbitrary rethrow delay.
+	if (fThrewMolotov)
+		m_flNextPrimaryAttack = gpGlobals->curtime + RETHROW_DELAY; // Delay next throw.
 }
 
-
+/*
 //-----------------------------------------------------------------------------
 // Purpose:
 // Input  :
@@ -215,7 +232,8 @@ bool CWeaponMolotov::ObjectInWay( void )
 		return false;
 	}
 }
-
+*/
+/*
 //-----------------------------------------------------------------------------
 // Purpose: Override to allow throw w/o LOS
 // Input  :
@@ -226,7 +244,8 @@ bool CWeaponMolotov::WeaponLOSCondition(const Vector &ownerPos, const Vector &ta
 	// <<TODO>> should test if can throw from present location here...
 	return true;
 }
-
+*/
+/*
 //-----------------------------------------------------------------------------
 // Purpose: Override to check throw
 // Input  :
@@ -296,7 +315,8 @@ int CWeaponMolotov::WeaponRangeAttack1Condition( float flDot, float flDist )
 
 	return m_iThrowBits;
 }
-
+*/
+/*
 //-----------------------------------------------------------------------------
 // Purpose: 
 //
@@ -320,7 +340,7 @@ void CWeaponMolotov::ThrowMolotov( const Vector &vecSrc, const Vector &vecVeloci
 	pMolotov->SetThrower( GetOwner() );
 	pMolotov->SetOwnerEntity( ((CBaseEntity*)GetOwner()) );
 }
-
+*/
 //-----------------------------------------------------------------------------
 // Purpose: 
 //
@@ -328,7 +348,29 @@ void CWeaponMolotov::ThrowMolotov( const Vector &vecSrc, const Vector &vecVeloci
 //-----------------------------------------------------------------------------
 void CWeaponMolotov::PrimaryAttack( void )
 {
+// ------------------
+// Modified function.
+// ------------------
+	if (m_bRedraw) // If we need to redraw, don't attack.
+		return;
 
+	CBaseCombatCharacter* pOwner = GetOwner(); // Find the molotov's owner.
+	if (!pOwner)
+		return;
+
+	CBasePlayer* pPlayer = ToBasePlayer(GetOwner()); // Find the player.
+	if (!pPlayer)
+		return;
+
+	ThrowMolotov(pPlayer); // Throw molotov!
+	pOwner->RemoveAmmo(1, m_iSecondaryAmmoType); // Subtract 1 from the ammo count.
+	SendWeaponAnim(ACT_VM_THROW); // Play the throwing animation.
+	m_flNextPrimaryAttack = gpGlobals->curtime + 0.75; // Delay next throw, 0.75 seconds is arbitrary.
+
+	if (!HasSecondaryAmmo())
+		pPlayer->SwitchToNextBestWeapon(this); // If we run out of ammo, switch weapons.
+
+	/*
 	CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
 
 	if (!pPlayer)
@@ -363,8 +405,9 @@ void CWeaponMolotov::PrimaryAttack( void )
 	m_flNextSecondaryAttack = gpGlobals->curtime + 1.0;
 
 	m_bNeedDraw = true;
+	*/
 }
-
+/*/
 //-----------------------------------------------------------------------------
 // Purpose: 
 //
@@ -375,7 +418,8 @@ void CWeaponMolotov::SecondaryAttack( void )
 	//<<TEMP>>
 	// Hmmm... what should I do here?
 }
-
+*/
+/*
 //-----------------------------------------------------------------------------
 // Purpose: 
 //
@@ -401,7 +445,7 @@ void CWeaponMolotov::DrawAmmo( void )
 	m_flNextSecondaryAttack = gpGlobals->curtime + 2.0;
 
 }
-
+*/
 //-----------------------------------------------------------------------------
 // Purpose: Override so shotgun can do mulitple reloads in a row
 // Input  :
@@ -415,7 +459,18 @@ void CWeaponMolotov::ItemPostFrame( void )
 		return;
 	}
 
+// ------------------
+// Modified function.
+// ------------------
+	if ((pOwner->m_afButtonPressed & IN_ATTACK) && m_flNextPrimaryAttack <= gpGlobals->curtime)
+		PrimaryAttack();
 
+	if (m_bRedraw)
+		Reload();
+
+	BaseClass::ItemPostFrame();
+
+	/*
 	if ((pOwner->m_nButtons & IN_ATTACK2) && (m_flNextSecondaryAttack <= gpGlobals->curtime))
 	{
 		SecondaryAttack();
@@ -436,9 +491,10 @@ void CWeaponMolotov::ItemPostFrame( void )
 	{
 		WeaponIdle( );
 	}
+	*/
 }
 
-
+/*
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -450,4 +506,93 @@ CWeaponMolotov::CWeaponMolotov( void )
 
 	m_fMinRange1	= 200;
 	m_fMaxRange1	= 1000;
+}
+*/
+
+// ---------------------
+// Modified constructor.
+// ---------------------
+CWeaponMolotov::CWeaponMolotov() :
+	CBaseHLCombatWeapon(),
+	m_bRedraw(false)
+{
+	NULL;
+}
+
+// ----------
+// Additions.
+// ----------
+bool CWeaponMolotov::Deploy()
+{
+	m_bRedraw = false;
+	return BaseClass::Deploy();
+}
+
+bool CWeaponMolotov::Holster(CBaseCombatWeapon* pSwitchingTo)
+{
+	m_bRedraw = false;
+	return BaseClass::Holster(pSwitchingTo);
+}
+
+bool CWeaponMolotov::Reload()
+{
+	if (!HasSecondaryAmmo()) // If we don't have ammo, don't reload!
+		return false;
+
+	if (m_bRedraw && m_flNextPrimaryAttack <= gpGlobals->curtime)
+	{
+		SendWeaponAnim(ACT_VM_DRAW); // Play drawing animation.
+		m_bRedraw = false;
+	}
+	return true;
+}
+
+void CWeaponMolotov::CheckThrowPosition(CBasePlayer* pPlayer, const Vector& vecEye, Vector& vecSrc)
+{
+// ---------------------------------------
+// Trace to see what the molotov will hit.
+// ---------------------------------------
+	trace_t tr;
+	UTIL_TraceHull(vecEye, vecSrc, -Vector(6, 6, 6), Vector(6, 6, 6), pPlayer->PhysicsSolidMaskForEntity(),
+		pPlayer, pPlayer->GetCollisionGroup(), &tr);
+
+// --------------------------------------------------
+// If the trace hits something, change the end point.
+// --------------------------------------------------
+	if (tr.DidHit())
+		vecSrc = tr.endpos;
+}
+
+void CWeaponMolotov::ThrowMolotov(CBasePlayer* pPlayer)
+{
+// ----------------------------------------
+// Get throw position, angles and velocity.
+// ----------------------------------------
+	Vector vecEye = pPlayer->EyePosition();
+	Vector vForward, vRight;
+
+	pPlayer->EyeVectors(&vForward, &vRight, NULL);
+	Vector vecSrc = vecEye + vForward * 18.0f + vRight * 8.0f;
+	CheckThrowPosition(pPlayer, vecEye, vecSrc);
+	vForward[2] += 0.1f;
+
+	Vector vecThrow;
+	pPlayer->GetVelocity(&vecThrow, NULL);
+	vecThrow += vForward * 1200;
+
+// -----------------------------------------------------------
+// Create the molotov grenade and apply some properties to it.
+// -----------------------------------------------------------
+	CGrenade_Molotov* pMolotov = (CGrenade_Molotov*)Create("grenade_molotov", vecSrc, vec3_angle, GetOwner());
+
+	m_bRedraw = true; // Need to redraw the viewmodel.
+
+	pMolotov->SetAbsVelocity(vecThrow);
+
+	QAngle angVel(random->RandomFloat(-100, -500), random->RandomFloat(-100, -500), random->RandomFloat(-100, -500));
+	pMolotov->SetLocalAngularVelocity(angVel); // Tumble in the air.
+	pMolotov->SetThrower(GetOwner());
+	pMolotov->SetOwnerEntity((CBaseEntity*)GetOwner());
+	m_iPrimaryAttacks++;
+	gamestats->Event_WeaponFired(pPlayer, true, GetClassname());
 }

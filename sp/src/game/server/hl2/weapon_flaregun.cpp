@@ -1,8 +1,12 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose:		Flare gun (fffsssssssssss!!)
+//				Fixes a game breaking crash that occurs when flares bounce off of a
+//				surface then enters water.
+//				Also includes a fix for the flare Die crash as outlined in the Mapbase
+//				GitHub, thanks to meatspace and Wikot235!
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -399,11 +403,15 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 			//Clamp minimum damage
 			iDamage = 5;
 		}
-
+		*/
+// ------------------------------------------------------------------
+// Moved the */ up a little bit, this is to ignite explosive barrels.
+// ------------------------------------------------------------------
 		//Use m_pOwner, not GetOwnerEntity()
+		int iDamage = 0;
 		pOther->TakeDamage( CTakeDamageInfo( this, m_pOwner, iDamage, (DMG_BULLET|DMG_BURN) ) );
 		m_flNextDamage = gpGlobals->curtime + 1.0f;
-		*/
+		
 
 		CBaseAnimating *pAnim;
 
@@ -440,6 +448,7 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 			{
 				//Only embed into concrete and wood (jdw: too obscure for players?)
 				//if ( ( pdata->gameMaterial == 'C' ) || ( pdata->gameMaterial == 'W' ) )
+				if ( ( pdata->game.material == 'C') || (pdata->game.material == 'W') ) // Restored.
 				{
 					Vector	impactDir = ( tr.endpos - tr.startpos );
 					VectorNormalize( impactDir );
@@ -491,7 +500,14 @@ void CFlare::FlareTouch( CBaseEntity *pOther )
 		m_nBounces++;
 
 		//After the first bounce, smacking into whoever fired the flare is fair game
-		SetOwnerEntity( this );	
+// ---------------------------------------------------------------------------
+// This is the problematic line! Why? See SoundEmitterSystem.cpp, line 747.
+// Basically, if closed captions are enabled, the flare's owner entity will be
+// itself, causing an infinite loop. This crashes the game, so this can be
+// commented out. In Multiplayer mods, this can be left as is because closed
+// captions don't work (The EmitCloseCaption function returns immediately).
+// ---------------------------------------------------------------------------
+		// SetOwnerEntity( this ); // Commented out.
 
 		// Slow down
 		Vector vecNewVelocity = GetAbsVelocity();
@@ -545,10 +561,18 @@ void CFlare::Start( float lifeTime )
 //-----------------------------------------------------------------------------
 void CFlare::Die( float fadeTime )
 {
-	m_flTimeBurnOut = gpGlobals->curtime + fadeTime;
+// -------------------------------------------------------------------------------------
+// This was suggested by meatspace and fixed by Wikot235 over on the Mapbase GitHub,
+// this doesn't cause a crash but it does cause error messages to be displayed in the
+// developer console. I included Wikot's fix for this issue here to be on the safe side!
+// -------------------------------------------------------------------------------------
+	if (m_bInActiveList)
+	{
+		m_flTimeBurnOut = gpGlobals->curtime + fadeTime;
 
-	SetThink( &CFlare::FlareThink );
-	SetNextThink( gpGlobals->curtime + 0.1f );
+		SetThink(&CFlare::FlareThink);
+		SetNextThink(gpGlobals->curtime + 0.1f);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -657,7 +681,8 @@ void CFlare::AddToActiveFlares( void )
 	}
 }
 
-#if 0
+//#if 0
+#if 1
 
 IMPLEMENT_SERVERCLASS_ST(CFlaregun, DT_Flaregun)
 END_SEND_TABLE()

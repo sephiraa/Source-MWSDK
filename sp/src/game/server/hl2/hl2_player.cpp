@@ -1,6 +1,7 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose:		Player for HL2.
+// Purpose:		Player for HL2. Fixed broken VGUI screen functionality.
+//				Also moved autojumping code to gamemovement.cpp
 //
 //=============================================================================//
 
@@ -76,8 +77,6 @@ extern ConVar autoaim_max_dist;
 #define TIME_IGNORE_FALL_DAMAGE 10.0
 
 extern int gEvilImpulse101;
-
-ConVar sv_autojump( "sv_autojump", "0" );
 
 ConVar hl2_walkspeed( "hl2_walkspeed", "150" );
 ConVar hl2_normspeed( "hl2_normspeed", "190" );
@@ -600,48 +599,9 @@ void CHL2_Player::PreThink(void)
 		return;
 	}
 
-	// This is an experiment of mine- autojumping! 
-	// only affects you if sv_autojump is nonzero.
-	if( (GetFlags() & FL_ONGROUND) && sv_autojump.GetFloat() != 0 )
-	{
-		VPROF( "CHL2_Player::PreThink-Autojump" );
-		// check autojump
-		Vector vecCheckDir;
-
-		vecCheckDir = GetAbsVelocity();
-
-		float flVelocity = VectorNormalize( vecCheckDir );
-
-		if( flVelocity > 200 )
-		{
-			// Going fast enough to autojump
-			vecCheckDir = WorldSpaceCenter() + vecCheckDir * 34 - Vector( 0, 0, 16 );
-
-			trace_t tr;
-
-			UTIL_TraceHull( WorldSpaceCenter() - Vector( 0, 0, 16 ), vecCheckDir, NAI_Hull::Mins(HULL_TINY_CENTERED),NAI_Hull::Maxs(HULL_TINY_CENTERED), MASK_PLAYERSOLID, this, COLLISION_GROUP_PLAYER, &tr );
-			
-			//NDebugOverlay::Line( tr.startpos, tr.endpos, 0,255,0, true, 10 );
-
-			if( tr.fraction == 1.0 && !tr.startsolid )
-			{
-				// Now trace down!
-				UTIL_TraceLine( vecCheckDir, vecCheckDir - Vector( 0, 0, 64 ), MASK_PLAYERSOLID, this, COLLISION_GROUP_NONE, &tr );
-
-				//NDebugOverlay::Line( tr.startpos, tr.endpos, 0,255,0, true, 10 );
-
-				if( tr.fraction == 1.0 && !tr.startsolid )
-				{
-					// !!!HACKHACK
-					// I KNOW, I KNOW, this is definitely not the right way to do this,
-					// but I'm prototyping! (sjb)
-					Vector vecNewVelocity = GetAbsVelocity();
-					vecNewVelocity.z += 250;
-					SetAbsVelocity( vecNewVelocity );
-				}
-			}
-		}
-	}
+// ----------------------------------------------------------------------
+// Removed autojumping code, check gamemovement.cpp for my version of it!
+// ----------------------------------------------------------------------
 
 	VPROF_SCOPE_BEGIN( "CHL2_Player::PreThink-Speed" );
 	HandleSpeedChanges();
@@ -866,6 +826,12 @@ void CHL2_Player::PreThink(void)
 
 	// Update weapon's ready status
 	UpdateWeaponPosture();
+
+	// Addition, If we're in VGUI mode we should avoid shooting
+	if (GetVGUIMode())
+	{
+		m_nButtons &= ~(IN_ATTACK | IN_ATTACK2);
+	}
 
 	// Disallow shooting while zooming
 	if ( IsX360() )
@@ -2934,6 +2900,17 @@ void CHL2_Player::UpdateWeaponPosture( void )
 		UTIL_TraceLine( EyePosition(), EyePosition() + vecAim * CHECK_FRIENDLY_RANGE, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr );
 
 		CBaseEntity *aimTarget = tr.m_pEnt;
+
+		// Addition.
+		if (GetVGUIMode())
+		{
+			// We're over a friendly, drop our weapon.
+			if (Weapon_Lower() == false)
+			{
+				// FIXME: We couldn't lower our weapon!
+			}
+			return;
+		}
 
 		//If we're over something
 		if (  aimTarget && !tr.DidHitWorld() )

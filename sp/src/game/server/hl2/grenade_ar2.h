@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose:		Projectile shot from the AR2 
+// Purpose:		Projectile shot from the AR2. Goes through breakable glass now.
 //
 // $Workfile:     $
 // $Date:         $
@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------------
 // $Log: $
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #ifndef	GRENADEAR2_H
@@ -30,6 +30,11 @@ public:
 	float				 m_fSpawnTime;
 	float				m_fDangerRadius;
 
+// ----------
+// Additions.
+// ----------
+	Vector m_vecVelocity; // Velocity prior to collision.
+	bool m_bTouched; // Did we touch breakable glass?
 
 	void		Spawn( void );
 	void		Precache( void );

@@ -2,6 +2,8 @@
 //
 // Purpose: The downtrodden citizens of City 17. Timid when unarmed, they will
 //			rise up against their Combine oppressors when given a weapon.
+//			Includes an attempt to make it so they will attack the player when
+//			one of their own is killed by the player! -TheMaster974
 //
 //=============================================================================//
 
@@ -161,6 +163,8 @@ public:
 	// Damage handling
 	//---------------------------------
 	int 			OnTakeDamage_Alive( const CTakeDamageInfo &info );
+	// Addition.
+	void			Event_Killed( const CTakeDamageInfo& info );
 	
 	//---------------------------------
 	// Commander mode

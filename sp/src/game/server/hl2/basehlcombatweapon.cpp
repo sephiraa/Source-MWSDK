@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Fixed burst fire functionality.
 //
 //=============================================================================//
 
@@ -80,18 +80,22 @@ void CHLMachineGun::PrimaryAttack( void )
 	{
 		if ( iBulletsToFire > m_iClip1 )
 			iBulletsToFire = m_iClip1;
-		m_iClip1 -= iBulletsToFire;
+		m_iClip1 -= 1; // m_iClip1 -= iBulletsToFire;
 	}
 
 	m_iPrimaryAttacks++;
 	gamestats->Event_WeaponFired( pPlayer, true, GetClassname() );
 
+	Vector vecSpread = pPlayer->GetAttackSpread(this);
+	float randFloat = vecSpread.x; // x = y = z
+	Vector spreadToUse = RandomVector(-randFloat, randFloat);
+
 	// Fire the bullets
 	FireBulletsInfo_t info;
-	info.m_iShots = iBulletsToFire;
+	info.m_iShots = 1; // info.m_iShots = iBulletsToFire
 	info.m_vecSrc = pPlayer->Weapon_ShootPosition( );
 	info.m_vecDirShooting = pPlayer->GetAutoaimVector( AUTOAIM_SCALE_DEFAULT );
-	info.m_vecSpread = pPlayer->GetAttackSpread( this );
+	info.m_vecSpread = spreadToUse; // info.m_vecSpread = pPlayer->GetAttackSpread(this);
 	info.m_flDistance = MAX_TRACE_LENGTH;
 	info.m_iAmmoType = m_iPrimaryAmmoType;
 	info.m_iTracerFreq = 2;
@@ -125,6 +129,21 @@ void CHLMachineGun::FireBullets( const FireBulletsInfo_t &info )
 	{
 		pPlayer->FireBullets(info);
 	}
+}
+
+// ---------
+// Addition.
+// ---------
+bool CHLMachineGun::Reload(void)
+{
+	bool isReloadAllowed = BaseClass::Reload();
+	if (isReloadAllowed)
+	{
+		WeaponSound(RELOAD);
+		return BaseClass::Reload();
+	}
+	else
+		return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -421,6 +440,17 @@ void CHLSelectFireMachineGun::BurstThink( void )
 	SetNextThink( gpGlobals->curtime + GetFireRate() );
 }
 
+// ---------
+// Addition.
+// ---------
+bool CHLSelectFireMachineGun::Reload(void)
+{
+	if (m_iBurstSize > 0)
+		return false;
+	else
+		return BaseClass::Reload();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //
@@ -442,11 +472,16 @@ void CHLSelectFireMachineGun::WeaponSound( WeaponSound_t shoot_type, float sound
 				// First round of a burst, and enough bullets remaining in the clip to fire the whole burst
 				BaseClass::WeaponSound( BURST, soundtime );
 			}
-			else if( m_iClip1 < m_iBurstSize )
+			else if( m_iClip1 == 1 ) // Only plays one sound! Formerly: else if ( m_iClip1 < m_iBurstSize )
 			{
 				// Not enough rounds remaining in the magazine to fire a burst, so play the gunshot
 				// sounds individually as each round is fired.
 				BaseClass::WeaponSound( SINGLE, soundtime );
+			}
+			// Addition, play a two-round burst sound.
+			else if (m_iClip1 == 2)
+			{
+				BaseClass::WeaponSound(SPECIAL3, soundtime);
 			}
 
 			break;

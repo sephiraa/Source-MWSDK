@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Fixed burst fire functionality.
 //
 //=============================================================================//
 
@@ -33,6 +33,9 @@ public:
 	virtual float	GetFireRate( void ) = 0;
 	virtual int		WeaponRangeAttack1Condition( float flDot, float flDist );
 	virtual bool	Deploy( void );
+
+	// Addition.
+	virtual bool	Reload(void);
 
 	virtual const Vector &GetBulletSpread( void );
 
@@ -86,6 +89,9 @@ public:
 
 	virtual void	PrimaryAttack( void );
 	virtual void	SecondaryAttack( void );
+
+	// Addition.
+	virtual bool	Reload(void);
 
 	virtual int		WeaponRangeAttack1Condition( float flDot, float flDist );
 	virtual int		WeaponRangeAttack2Condition( float flDot, float flDist );

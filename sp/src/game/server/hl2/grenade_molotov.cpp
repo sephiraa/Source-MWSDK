@@ -4,7 +4,7 @@
 //
 // $Workfile:     $
 // $Date:         $
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -20,6 +20,7 @@
 #include "ndebugoverlay.h"
 #include "vstdlib/random.h"
 #include "engine/IEngineSound.h"
+#include "explode.h" // Addition.
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -37,8 +38,8 @@ BEGIN_DATADESC( CGrenade_Molotov )
 	DEFINE_FIELD( m_pFireTrail, FIELD_CLASSPTR ),
 
 	// Function Pointers
-	DEFINE_FUNCTION( MolotovTouch ),
-	DEFINE_FUNCTION( MolotovThink ),
+	DEFINE_ENTITYFUNC( MolotovTouch ), // Fixed function type.
+	DEFINE_THINKFUNC( MolotovThink ), // Fixed function type.
 
 END_DATADESC()
 
@@ -46,19 +47,27 @@ LINK_ENTITY_TO_CLASS( grenade_molotov, CGrenade_Molotov );
 
 void CGrenade_Molotov::Spawn( void )
 {
+	VPhysicsInitNormal(SOLID_BBOX, 0, false); // Addition.
 	SetMoveType( MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE );
 	SetSolid( SOLID_BBOX ); 
-	SetCollisionGroup( COLLISION_GROUP_PROJECTILE );
+//	SetCollisionGroup( COLLISION_GROUP_PROJECTILE );
+	SetCollisionGroup( COLLISION_GROUP_WEAPON );
 
 	SetModel( "models/weapons/w_molotov.mdl");
 
-	UTIL_SetSize(this, Vector( -6, -6, -2), Vector(6, 6, 2));
+//	UTIL_SetSize(this, Vector( -6, -6, -2), Vector(6, 6, 2));
+	SetSize(Vector(-6, -6, -2), Vector(6, 6, 2));
 
-	SetTouch( MolotovTouch );
-	SetThink( MolotovThink );
+	SetTouch( &CGrenade_Molotov::MolotovTouch ); // Proper pointer.
+	SetThink( &CGrenade_Molotov::MolotovThink ); // Proper pointer.
 	SetNextThink( gpGlobals->curtime + 0.1f );
 
-	m_flDamage		= sk_plr_dmg_molotov.GetFloat();
+//	m_flDamage		= sk_plr_dmg_molotov.GetFloat();
+	if (GetOwnerEntity() && GetOwnerEntity()->IsPlayer())
+		m_flDamage = sk_plr_dmg_molotov.GetFloat(); // Player damage.
+	else
+		m_flDamage = sk_npc_dmg_molotov.GetFloat(); // NPC damage.
+
 	m_DmgRadius		= sk_molotov_radius.GetFloat();
 
 	m_takedamage	= DAMAGE_YES;
@@ -97,6 +106,15 @@ void CGrenade_Molotov::Spawn( void )
 //-----------------------------------------------------------------------------
 void CGrenade_Molotov::MolotovTouch( CBaseEntity *pOther )
 {
+// ----------------------------------------------------------------------------
+// This should prevent molotovs from detonating prematurely on trigger volumes.
+// ----------------------------------------------------------------------------
+	if (pOther->IsSolidFlagSet(FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS))
+	{
+		if (pOther->IsSolid())
+			Detonate();
+		return;
+	}
 	Detonate();
 }
 
@@ -130,7 +148,9 @@ void CGrenade_Molotov::Detonate( void )
 		return;
 	}
 
-	EmitSound( "Grenade_Molotov.Detonate");
+	CPASAttenuationFilter filter(this); // Addition.
+//	EmitSound( "Grenade_Molotov.Detonate");
+	EmitSound( filter, entindex(), "Grenade_Molotov.Detonate" );
 
 // Start some fires
 	int i;
@@ -170,7 +190,7 @@ void CGrenade_Molotov::Detonate( void )
 		}
 	}
 // End Start some fires
-	
+	/*
 	CPASFilter filter2( trace.endpos );
 
 	te->Explosion( filter2, 0.0,
@@ -181,6 +201,12 @@ void CGrenade_Molotov::Detonate( void )
 		TE_EXPLFLAG_NOPARTICLES,
 		m_DmgRadius,
 		m_flDamage );
+	*/
+// -----------------------------------------------------------
+// Create an actual explosion, rather than a temporary entity.
+// -----------------------------------------------------------
+	ExplosionCreate(GetAbsOrigin() + Vector(0, 0, 16), GetAbsAngles(), GetThrower(), m_flDamage, m_DmgRadius,
+		SF_ENVEXPLOSION_NOSMOKE | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSPARKS, 0.0f, this, DMG_BURN);
 
 	CBaseEntity *pOwner;
 	pOwner = GetOwnerEntity();
@@ -191,7 +217,7 @@ void CGrenade_Molotov::Detonate( void )
 	UTIL_ScreenShake( GetAbsOrigin(), 25.0, 150.0, 1.0, 750, SHAKE_START );
 	CSoundEnt::InsertSound ( SOUND_DANGER, GetAbsOrigin(), BASEGRENADE_EXPLOSION_VOLUME, 3.0 );
 
-	RadiusDamage( CTakeDamageInfo( this, pOwner, m_flDamage, DMG_BLAST ), GetAbsOrigin(), m_DmgRadius, CLASS_NONE, NULL );
+//	RadiusDamage( CTakeDamageInfo( this, pOwner, m_flDamage, DMG_BLAST ), GetAbsOrigin(), m_DmgRadius, CLASS_NONE, NULL ); // Commented out.
 
 	AddEffects( EF_NODRAW );
 	SetAbsVelocity( vec3_origin );
@@ -235,7 +261,8 @@ void CGrenade_Molotov::Precache( void )
 {
 	BaseClass::Precache();
 
-	PrecacheModel("models/weapons/w_bb_bottle.mdl");
+//	PrecacheModel("models/weapons/w_bb_bottle.mdl");
+	PrecacheModel("models/weapons/w_molotov.mdl");
 
 	UTIL_PrecacheOther("_firesmoke");
 

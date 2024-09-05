@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: These grenades can now punch through breakable glass without exploding!
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -20,6 +20,12 @@
 #ifdef PORTAL
 	#include "portal_util_shared.h"
 #endif
+
+// ----------
+// Additions.
+// ----------
+#include "func_break.h"
+#include "func_breakablesurf.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -42,6 +48,12 @@ BEGIN_DATADESC( CGrenadeAR2 )
 	DEFINE_FIELD( m_hSmokeTrail, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_fSpawnTime, FIELD_TIME ),
 	DEFINE_FIELD( m_fDangerRadius, FIELD_FLOAT ),
+
+// ----------
+// Additions.
+// ----------
+	DEFINE_FIELD(m_vecVelocity, FIELD_VECTOR),
+	DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
 
 	// Function pointers
 	DEFINE_ENTITYFUNC( GrenadeAR2Touch ),
@@ -115,6 +127,12 @@ void CGrenadeAR2::Spawn( void )
 			m_hSmokeTrail->FollowEntity(this);
 		}
 	}
+
+// ----------
+// Additions.
+// ----------
+	m_bTouched = false;
+	m_vecVelocity = vec3_origin;
 }
 
 //-----------------------------------------------------------------------------
@@ -146,6 +164,15 @@ void CGrenadeAR2::GrenadeAR2Think( void )
 		{
 			Detonate();
 		}
+
+// ------------------------------------------------------------------
+// If we hit breakable glass, change velocity to pre-collision value.
+// ------------------------------------------------------------------
+		if (m_bTouched)
+		{
+			SetAbsVelocity(m_vecVelocity);
+			m_bTouched = false;
+		}
 	}
 
 	// The old way of making danger sounds would scare the crap out of EVERYONE between you and where the grenade
@@ -169,6 +196,33 @@ void CGrenadeAR2::GrenadeAR2Touch( CBaseEntity *pOther )
 	Assert( pOther );
 	if ( !pOther->IsSolid() )
 		return;
+
+// ---------------------------------------------------------------------------
+// If we hit a func_breakable or func_breakable_surf entity, break that entity
+// accordingly and continue with our pre-collision velocity.
+// ---------------------------------------------------------------------------
+	if (FClassnameIs(pOther, "func_breakable_surf"))
+	{
+		CBreakableSurface* pBreakable = static_cast<CBreakableSurface*>(pOther);
+		if (pBreakable)
+		{
+			m_bTouched = true;
+			m_vecVelocity = GetAbsVelocity();
+			pBreakable->Die(this, m_vecVelocity);
+			return;
+		}
+	}
+	else if (FClassnameIs(pOther, "func_breakable"))
+	{
+		CBreakable* pBreakable = static_cast<CBreakable*>(pOther);
+		if (pBreakable)
+		{
+			m_bTouched = true;
+			pBreakable->Break(this);
+			m_vecVelocity = GetAbsVelocity();
+			return;
+		}
+	}
 
 	// If I'm live go ahead and blow up
 	if (m_bIsLive)

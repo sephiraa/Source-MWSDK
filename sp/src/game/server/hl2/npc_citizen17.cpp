@@ -162,6 +162,12 @@ citizen_expression_list_t AngryExpressions[STATES_WITH_EXPRESSIONS] =
 	{ "scenes/Expressions/citizen_angry_combat_01.vcd" },
 };
 
+// -------------------------------------------------------------------------------------------------
+// This is a test to try and remove citizens from the player's squad, should the player betray them.
+// I believe this may be the reason for game crashes that I don't know how to resolve. -TheMaster974
+// -------------------------------------------------------------------------------------------------
+CUtlVector<CNPC_Citizen*> squadMembers;
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
@@ -2294,6 +2300,37 @@ int CNPC_Citizen::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	return BaseClass::OnTakeDamage_Alive( newInfo );
 }
 
+void CNPC_Citizen::Event_Killed(const CTakeDamageInfo& info)
+{
+	if (info.GetAttacker()->IsPlayer())
+	{
+// -----------------------------------------------------------------------------------
+// Make all citizens hate the player immediately and make them say something about it!
+// -----------------------------------------------------------------------------------
+		SetDefaultRelationship(Classify(), CLASS_PLAYER, D_HT, 99);
+
+		CAI_PlayerAlly* pMourner = dynamic_cast<CAI_PlayerAlly*>(FindSpeechTarget(AIST_NPCS));
+		if (pMourner)
+		{
+			pMourner->SpeakIfAllowed(TLK_BETRAYED);
+		}
+
+// ----------------------------------------------------
+// Remove all citizens from the player's squad as well.
+// ----------------------------------------------------
+		CAI_Squad* pPlayerSquad = g_AI_SquadManager.FindSquad(MAKE_STRING(PLAYER_SQUADNAME));
+		if (pPlayerSquad)
+		{
+			for (int i = 0; i < squadMembers.Count(); i++)
+			{
+				CNPC_Citizen* pCitizen = squadMembers.Element(i);
+				pPlayerSquad->RemoveFromSquad(pCitizen);
+			}
+		}
+	}
+	return BaseClass::Event_Killed(info);
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 bool CNPC_Citizen::IsCommandable() 
@@ -2724,6 +2761,7 @@ void CNPC_Citizen::AddToPlayerSquad()
 	FixupPlayerSquad();
 
 	SetCondition( COND_PLAYER_ADDED_TO_SQUAD );
+	squadMembers.AddToTail(this); // Addition.
 }
 
 //-----------------------------------------------------------------------------
@@ -2746,6 +2784,7 @@ void CNPC_Citizen::RemoveFromPlayerSquad()
 
 	// Don't evaluate the player squad for 2 seconds. 
 	gm_PlayerSquadEvaluateTimer.Set( 2.0 );
+	squadMembers.FindAndRemove(this);
 }
 
 //-----------------------------------------------------------------------------
