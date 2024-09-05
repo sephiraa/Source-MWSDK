@@ -4,7 +4,7 @@
 //
 // $Workfile:     $
 // $Date:         $
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 
@@ -1067,7 +1067,7 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 	}
 
 	// Let the move manager override anything it wants to.
-	if ( g_pClientMode->CreateMove( frametime, cmd ) )
+	if ( g_pClientMode->CreateMove( frametime, cmd, true ) )
 	{
 		// Get current view angles after the client mode tweaks with it
 		engine->SetViewAngles( cmd->viewangles );
@@ -1218,6 +1218,7 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 		VectorCopy( m_angPreviousViewAngles, cmd->viewangles );
 	}
 
+	cmd->buttons |= IN_VALIDVGUIINPUT; // Addition.
 	// Let the move manager override anything it wants to.
 	if ( g_pClientMode->CreateMove( input_sample_frametime, cmd ) )
 	{

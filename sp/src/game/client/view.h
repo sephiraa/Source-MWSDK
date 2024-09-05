@@ -1,10 +1,10 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Decreased VIEW_NEARZ value for FOV's greater than 90.
 //
 // $Workfile:     $
 // $Date:         $
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #if !defined( VIEW_H )
@@ -25,7 +25,7 @@ class VPlane;
 
 // near and far Z it uses to render the world.
 #ifndef HL1_CLIENT_DLL
-#define VIEW_NEARZ	7
+#define VIEW_NEARZ	3 // Formerly 7.
 #else
 #define VIEW_NEARZ	3
 #endif

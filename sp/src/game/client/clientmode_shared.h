@@ -1,10 +1,10 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Fixed VGUI input.
 //
 // $Workfile:     $
 // $Date:         $
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 #if !defined( CLIENTMODE_NORMAL_H )
 #define CLIENTMODE_NORMAL_H
@@ -83,6 +83,9 @@ public:
 	virtual void	ProcessInput(bool bActive);
 	virtual bool	CreateMove( float flInputSampleTime, CUserCmd *cmd );
 	virtual void	Update();
+
+	// Addition.
+	virtual bool	CreateMove(float flInputSampleTime, CUserCmd *cmd, bool bVguiUpdate);
 
 	// Input
 	virtual int		KeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );

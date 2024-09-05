@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Fixes the disappearing sun glitch!
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 #include "cbase.h"
 #include "view.h"
@@ -159,7 +159,12 @@ void CGlowOverlay::UpdateSkyGlowObstruction( float zFar, bool bCacheFullSceneSta
 	if ( PixelVisibility_IsAvailable() )
 	{
 		// Trace a ray at the object. 
-		Vector pos = CurrentViewOrigin() + m_vDirection * zFar * 0.999f;
+//		Vector pos = CurrentViewOrigin() + m_vDirection * zFar * 0.999f;
+
+// -------------------------------------------------------------
+// Changed so the sun no longer disappears when it is looked at!
+// -------------------------------------------------------------
+		Vector pos = CurrentViewOrigin() + m_vDirection * zFar * 0.99f;
 
 		// UNDONE: Can probably do only the pixelvis query in this case if you can figure out where
 		// to put it - or save the position of this trace
