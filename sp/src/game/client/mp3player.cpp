@@ -6,7 +6,7 @@
 
 #include "cbase.h"
 
-#if 1 // Modification, change this to 0 to remove the in-game MP3 player.
+#ifdef WIN32 // Modification, the function CopyFileA causes errors on Linux :(
 #include "mp3player.h"
 #include "KeyValues.h"
 #include "filesystem.h"
