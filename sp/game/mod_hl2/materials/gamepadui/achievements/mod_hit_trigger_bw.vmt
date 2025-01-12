@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$baseTexture"	"gamepadui\achievements/mod_hit_trigger_bw"
+	"$vertexalpha"	"1"
+}
