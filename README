@@ -2,11 +2,13 @@
 If you use any of these modified files, please give credit to TheMaster974!
 ---------------------------------------------------------------------------
 
-A fork of the 2013 SDK, with additions/modifications from my YouTube videos linked below. This (currently) covers all Singleplayer changes from tutorials 0.5 to 26 (excluding shader stuff) and Source Shorts 1 to 9. Multiplayer changes will come eventually. Includes Dynamic RTT Shadows feature from Saul Rennison. Let me know if there are any issues!
+A fork of the 2013 SDK, with additions/modifications from my YouTube videos linked below. This (currently) covers all Singleplayer changes from tutorials 0.5 to 31 (excluding 6/7/8/15/24 i.e. shader stuff) and Source Shorts 1 to 18 (excluding 2/7/8/10/15/17 i.e. Multiplayer stuff, using leaked engine code and Fake CSM from celisej567). Multiplayer changes will come eventually. Let me know if there are any issues!
 
 Valve Source Code Tutorials can be found here → https://www.youtube.com/playlist?list=PL8tDEPB6h7Lk0YtRtt4k1h_Thgj1ZA2dX
 
 Source Shorts can be found here → https://www.youtube.com/playlist?list=PL8tDEPB6h7LnslIGAYRsmS-wS5MeorktV
+
+Includes Dynamic RTT Shadows feature from Saul Rennison and Gamepad UI feature from Joshua Ashton / DasMaddi, with some assistance from WadDelZ!
 
 ------------------------------
 Source SDK License Information
