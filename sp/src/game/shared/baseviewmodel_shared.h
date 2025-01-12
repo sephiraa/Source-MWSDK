@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Moves a weapon's viewmodel when ironsights are enabled.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #ifndef BASEVIEWMODEL_SHARED_H
@@ -56,6 +56,11 @@ public:
 	virtual void			CalcViewModelView( CBasePlayer *owner, const Vector& eyePosition, 
 								const QAngle& eyeAngles );
 	virtual void			AddViewModelBob( CBasePlayer *owner, Vector& eyePosition, QAngle& eyeAngles ) {};
+
+// ---------
+// Addition.
+// ---------
+	void					CalcIronsights(Vector& pos, QAngle& ang);
 
 	// Initializes the viewmodel for use							
 	void					SetOwner( CBaseEntity *pEntity );

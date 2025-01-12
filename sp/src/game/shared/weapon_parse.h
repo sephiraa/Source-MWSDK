@@ -2,7 +2,7 @@
 //
 // Purpose: Weapon data file parsing, shared by game & client dlls.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #ifndef WEAPON_PARSE_H
@@ -128,8 +128,10 @@ public:
 // TF2 specific
 	bool					bShowUsageHint;							// if true, then when you receive the weapon, show a hint about it
 
-// SERVER DLL
-
+// SERVER DLL - more like additions for the ironsights feature.
+	Vector vecIronsightPosOffset;
+	QAngle angIronsightAngOffset;
+	float flIronsightFOVOffset;
 };
 
 // The weapon parse function

@@ -1,17 +1,17 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Restores achievement notifications. Thanks to WadDelZ for the code!
 //
 //=============================================================================
 
 #include "cbase.h"
 #include "achievementmgr.h"
 #include "icommandline.h"
+#include "fmtstr.h" // Moved out of #ifdef CLIENT_DLL section.
 #ifdef CLIENT_DLL
 #include "tier3/tier3.h"
 #include "vgui/ILocalize.h"
 #include "achievement_notification_panel.h"
-#include "fmtstr.h"
 #include "gamestats.h"
 #endif // CLIENT_DLL
 
@@ -413,6 +413,13 @@ void CBaseAchievement::EnsureComponentBitSetAndEvaluate( int iBitNumber )
 	if ( IsAchieved() )
 		return;
 
+// ----------
+// Additions.
+// ----------
+#ifndef CLIENT_DLL
+	int prevcount = m_iCount;
+#endif
+
 	// calculate which bit this component corresponds to
 	uint64 iBitMask = ( (uint64) 1 ) << iBitNumber;
 
@@ -447,6 +454,22 @@ void CBaseAchievement::EnsureComponentBitSetAndEvaluate( int iBitNumber )
 			Msg( "Component %d for achievement %s found, but already had that component\n", iBitNumber, GetName() );
 		}
 	}
+
+// -------------------------------------
+// Trigger the achievement notification.
+// -------------------------------------
+#ifndef CLIENT_DLL
+	if (prevcount != m_iCount)
+	{
+		static ConCommand* cmd = cvar->FindCommand("do_achievement_notification");
+		if (cmd)
+		{
+			CCommand args;
+			args.Tokenize(CFmtStr("do_achievement_notification %s %d %d", GetName(), m_iCount, m_iGoal));
+			cmd->Dispatch(args);
+		}
+	}
+#endif
 
 	// Check to see if we've achieved our goal even if the bit is already set 
 	// (this fixes some older achievements that are stuck in the 9/9 state and could never be evaluated)

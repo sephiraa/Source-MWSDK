@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Adds ironsights to weapons.
 //
 //===========================================================================//
 
@@ -392,6 +392,24 @@ public:
 	virtual void			Activate( void );
 
 	virtual bool ShouldUseLargeViewModelVROverride() { return false; }
+
+// ----------
+// Additions.
+// ----------
+	Vector GetIronsightPositionOffset(void) const;
+	QAngle GetIronsightAngleOffset(void) const;
+	float GetIronsightFOVOffset(void) const;
+
+	// Enabled by default, however we will check which weapons should be ironsighted elsewhere.
+	virtual bool HasIronsights(void) { return true; }
+	bool IsIronsighted(void);
+	void ToggleIronsights(void);
+	void EnableIronsights(void);
+	void DisableIronsights(void);
+	void SetIronsightTime(void);
+
+	CNetworkVar(bool, m_bIsIronsighted);
+	CNetworkVar(float, m_flIronsightedTime);
 public:
 // Server Only Methods
 #if !defined( CLIENT_DLL )

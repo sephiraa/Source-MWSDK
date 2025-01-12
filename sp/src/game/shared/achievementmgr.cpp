@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Restores achievement notifications. Thanks to WadDelZ for the code!
 //
 //=============================================================================
 
@@ -889,6 +889,37 @@ void CAchievementMgr::SaveGlobalStateIfDirty( bool bAsync )
 	}
 }
 
+// ---------------------------------------------
+// Addition to create achievement notifications.
+// ---------------------------------------------
+#ifdef CLIENT_DLL
+CON_COMMAND_F(do_achievement_notification, "Does an achievement notification", FCVAR_HIDDEN)
+{
+	const wchar_t* achievement_name = ACHIEVEMENT_LOCALIZED_NAME_FROM_STR(args.Arg(1));
+	int prog = atoi(args.Arg(2));
+	int goal = atoi(args.Arg(3));
+
+	const wchar_t* achievement = g_pVGuiLocalize->Find("#achievement");
+	const wchar_t* achieved = g_pVGuiLocalize->Find("#achieved");
+	const wchar_t* completed = g_pVGuiLocalize->Find("#completed");
+	const wchar_t* achievement_earned = g_pVGuiLocalize->Find("#achievement_earned");
+	const wchar_t* achievement_progress = g_pVGuiLocalize->Find("#achievement_progress");
+
+	const char* msg = CFmtStr("%ls '%ls' %ls", achievement, achievement_name, achieved);
+	if (prog < goal)
+		msg = CFmtStr("\n%ls (%d / %d) %ls\n", achievement_name, prog, goal, completed);
+
+	wchar_t buf[1028];
+	Q_strtowcs(msg, -1, buf, sizeof(buf));
+
+	CAchievementNotificationPanel* pPanel = GET_HUDELEMENT(CAchievementNotificationPanel);
+	if (pPanel)
+	{
+		pPanel->AddNotification(args.Arg(1), prog >= goal ? achievement_earned : achievement_progress, buf);
+	}
+}
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: awards specified achievement
 //-----------------------------------------------------------------------------
@@ -928,6 +959,19 @@ void CAchievementMgr::AwardAchievement( int iAchievementID )
 
     // [dwenger] Necessary for sorting achievements by award time
 	pAchievement->OnAchieved();
+
+// -------------------------------------
+// Trigger the achievement notification.
+// -------------------------------------
+#ifndef CLIENT_DLL
+	static ConCommand* cmd = cvar->FindCommand("do_achievement_notification");
+	if (cmd)
+	{
+		CCommand args;
+		args.Tokenize(CFmtStr("do_achievement_notification %s %d %d", pAchievement->GetName(), pAchievement->GetCount(), pAchievement->GetGoal()));
+		cmd->Dispatch(args);
+	}
+#endif
 
     // [tj]
     IGameEvent * event = gameeventmanager->CreateEvent( "achievement_earned_local" );

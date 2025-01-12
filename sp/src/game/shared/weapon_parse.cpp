@@ -2,7 +2,7 @@
 //
 // Purpose: Weapon data file parsing, shared by game & client dlls.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 #include "cbase.h"
 #include <KeyValues.h>
@@ -459,6 +459,29 @@ void FileWeaponInfo_t::Parse( KeyValues *pKeyValuesData, const char *szWeaponNam
 				Q_strncpy( aShootSounds[i], soundname, MAX_WEAPON_STRING );
 			}
 		}
+	}
+// --------------------------------
+// Addition for ironsights feature.
+// --------------------------------
+	KeyValues* pSights = pKeyValuesData->FindKey("IronSight");
+	if (pSights)
+	{
+		vecIronsightPosOffset.x = pSights->GetFloat("forward", 0.0f);
+		vecIronsightPosOffset.y = pSights->GetFloat("right", 0.0f);
+		vecIronsightPosOffset.z = pSights->GetFloat("up", 0.0f);
+
+		angIronsightAngOffset[PITCH] = pSights->GetFloat("pitch", 0.0f);
+		angIronsightAngOffset[YAW] = pSights->GetFloat("yaw", 0.0f);
+		angIronsightAngOffset[ROLL] = pSights->GetFloat("roll", 0.0f);
+
+		flIronsightFOVOffset = pSights->GetFloat("fov", 0.0f);
+	}
+	else
+	{
+		// No ironsights.
+		vecIronsightPosOffset = vec3_origin;
+		angIronsightAngOffset.Init();
+		flIronsightFOVOffset = 0.0f;
 	}
 }
 
