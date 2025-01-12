@@ -6,7 +6,7 @@
 
 #include "cbase.h"
 #include "basehlcombatweapon.h"
-#include "NPCevent.h"
+#include "npcevent.h"			// Fix for Linux compilation.
 #include "basecombatcharacter.h"
 #include "ai_basenpc.h"
 #include "player.h"
