@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Added jeep headlights.
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -193,6 +193,12 @@ void CPropJeep::Precache( void )
 	PrecacheScriptSound( "PropJeep.AmmoOpen" );
 
 	PrecacheScriptSound( "Jeep.GaussCharge" );
+
+// ----------
+// Additions.
+// ----------
+	PrecacheScriptSound("Airboat_headlight_on");
+	PrecacheScriptSound("Airboat_headlight_off");
 
 	PrecacheModel( GAUSS_BEAM_SPRITE );
 
@@ -1324,8 +1330,8 @@ void CPropJeep::DriveVehicle( float flFrameTime, CUserCmd *ucmd, int iButtonsDow
 {
 	int iButtons = ucmd->buttons;
 
-	//Adrian: No headlights on Superfly.
-/*	if ( ucmd->impulse == 100 )
+	//Adrian: No headlights on Superfly. UPDATE: How about no?
+	if ( ucmd->impulse == 100 )
 	{
 		if (HeadlightIsOn())
 		{
@@ -1335,7 +1341,7 @@ void CPropJeep::DriveVehicle( float flFrameTime, CUserCmd *ucmd, int iButtonsDow
 		{
 			HeadlightTurnOn();
 		}
-	}*/
+	}
 		
 	// Only handle the cannon if the vehicle has one
 	if ( m_bHasGun )
@@ -1471,7 +1477,9 @@ void CPropJeep::EnterVehicle( CBaseCombatCharacter *pPassenger )
 //-----------------------------------------------------------------------------
 void CPropJeep::ExitVehicle( int nRole )
 {
-	HeadlightTurnOff();
+	// Addition, turn the jeep's headlights off.
+	if(HeadlightIsOn())
+		HeadlightTurnOff();
 
 	BaseClass::ExitVehicle( nRole );
 
@@ -1672,6 +1680,21 @@ void CPropJeep::InputFinishRemoveTauCannon( inputdata_t &inputdata )
 	// Remove & hide the gun
 	SetBodygroup( 1, false );
 	m_bHasGun = false;
+}
+
+// ----------
+// Additions.
+// ----------
+void CPropJeep::HeadlightTurnOn(void)
+{
+	EmitSound("Airboat_headlight_on");
+	m_bHeadlightIsOn = true;
+}
+
+void CPropJeep::HeadlightTurnOff(void)
+{
+	EmitSound("Airboat_headlight_off");
+	m_bHeadlightIsOn = false;
 }
 
 //========================================================================================================================================

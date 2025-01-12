@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Added jeep headlights.
 //
 //=============================================================================
 
@@ -86,9 +86,12 @@ public:
 	const char		*GetTracerType( void ) { return "AR2Tracer"; }
 	void			DoImpactEffect( trace_t &tr, int nDamageType );
 
+	// ------------------------------------------
+	// Changed so the jeep has proper headlights.
+	// ------------------------------------------
 	bool HeadlightIsOn( void ) { return m_bHeadlightIsOn; }
-	void HeadlightTurnOn( void ) { m_bHeadlightIsOn = true; }
-	void HeadlightTurnOff( void ) { m_bHeadlightIsOn = false; }
+	void HeadlightTurnOn( void ); /* { m_bHeadlightIsOn = true; } */
+	void HeadlightTurnOff( void ); /* { m_bHeadlightIsOn = false; } */
 
 private:
 

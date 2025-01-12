@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: A shotgun. Adds fix for full holster sequence.
+// Purpose: A shotgun. Adds fix for full holster sequence and ironsights.
 //
 //			Primary attack: single barrel shot.
 //			Secondary attack: double barrel shot.
@@ -307,6 +307,8 @@ bool CWeaponShotgun::StartReload( void )
 
 	pOwner->m_flNextAttack = gpGlobals->curtime;
 	m_flNextPrimaryAttack = gpGlobals->curtime + SequenceDuration();
+
+	DisableIronsights(); // Addition.
 
 	m_bInReload = true;
 	return true;

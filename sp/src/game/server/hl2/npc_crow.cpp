@@ -6,7 +6,7 @@
 // TODO: landing
 // TODO: death
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 
 #include "cbase.h"
@@ -147,6 +147,12 @@ void CNPC_Crow::Spawn( void )
 	m_flDangerSoundTime = gpGlobals->curtime;
 
 	SetGoalEnt( NULL );
+
+// ----------
+// Additions.
+// ----------
+	AddGlowEffect();
+	SetGlowEffectColor(0.76f, 0.76f, 0.76f);
 }
 
 
