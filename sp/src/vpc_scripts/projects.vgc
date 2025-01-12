@@ -24,11 +24,14 @@ $Project "fgdlib"
 	"fgdlib\fgdlib.vpc" [$WIN32]
 }
 
+// -------------------------------------------
+// It looks like this doesn't work on Linux :(
+// -------------------------------------------
 $Project "gamepadui"
 {
-	"game\gamepadui\gamepadui_hl2.vpc"		[$HL2]
-	"game\gamepadui\gamepadui_episodic.vpc"	[$EPISODIC]
-	"game\gamepadui\gamepadui_portal.vpc"	[$PORTAL]
+	"game\gamepadui\gamepadui_hl2.vpc"	[$WIN32 && $HL2]
+	"game\gamepadui\gamepadui_episodic.vpc"	[$WIN32 && $EPISODIC]
+	"game\gamepadui\gamepadui_portal.vpc"	[$WIN32 && $PORTAL]
 }
 
 $Project "game_shader_dx9"
