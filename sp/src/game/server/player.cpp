@@ -6575,7 +6575,9 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		}
 		return true;
 	}
-	// Addition.
+// ----------
+// Additions.
+// ----------
 	else if (stricmp(cmd, "vguimode_true") == 0)
 	{
 		SetVGUIMode(true);
@@ -6636,7 +6638,15 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		{
 			Warning("No ent index specified for VGUI output\n");
 		}
-		}
+	}
+	else if (stricmp(cmd, "toggle_ironsight") == 0)
+	{
+		CBaseCombatWeapon* pWeapon = GetActiveWeapon();
+		if (pWeapon != NULL)
+			pWeapon->ToggleIronsights();
+
+		return true;
+	}
 
 	return false;
 }

@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Added glow effects.
 //
 //=============================================================================//
 
@@ -53,6 +53,17 @@ public:
 
 	virtual int	 Restore( IRestore &restore );
 	virtual void OnRestore();
+
+// ----------
+// Additions.
+// ----------
+#ifdef GLOWS_ENABLE
+	// Glows
+	void				SetGlowEffectColor(float r, float g, float b);
+	void				AddGlowEffect(void);
+	void				RemoveGlowEffect(void);
+	bool				IsGlowEffectActive(void);
+#endif // GLOWS_ENABLE
 
 	CStudioHdr *GetModelPtr( void );
 	void InvalidateMdlCache();
@@ -162,6 +173,16 @@ protected:
 	// save off your pose parameters in member variables in your derivation of this function:
 	virtual void	PopulatePoseParameters( void );
 
+// ----------
+// Additions.
+// ----------
+#ifdef GLOWS_ENABLE
+protected:
+	CNetworkVar(bool, m_bGlowEnabled);
+	CNetworkVar(float, m_flGlowR);
+	CNetworkVar(float, m_flGlowG);
+	CNetworkVar(float, m_flGlowB);
+#endif // GLOWS_ENABLE
 
 public:
 
@@ -281,6 +302,19 @@ public:
 
 	virtual void	ModifyOrAppendCriteria( AI_CriteriaSet& set );
 
+// ----------
+// Additions.
+// ----------
+#ifdef GLOWS_ENABLE
+	void ReloadGlow(inputdata_t& inputdata);
+	void SetGlowEnabled(inputdata_t& inputdata);
+	void SetGlowDisabled(inputdata_t& inputdata);
+	void SetGlowColorRed(inputdata_t& inputdata);
+	void SetGlowColorGreen(inputdata_t& inputdata);
+	void SetGlowColorBlue(inputdata_t& inputdata);
+	void SetGlowColor(inputdata_t& inputdata);
+#endif
+
 	// Send a muzzle flash event to the client for this entity.
 	void DoMuzzleFlash();
 
@@ -341,6 +375,12 @@ private:
 	void InputSetModelScale( inputdata_t &inputdata );
 
 	bool CanSkipAnimation( void );
+
+// ----------
+// Additions.
+// ----------
+	void UpdateGlowEffect(void);
+	void DestroyGlowEffect(void);
 
 public:
 	CNetworkVar( int, m_nForceBone );

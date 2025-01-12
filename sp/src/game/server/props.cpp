@@ -229,6 +229,12 @@ void CBaseProp::Spawn( void )
 	m_flAnimTime = gpGlobals->curtime;
 	m_flPlaybackRate = 0.0;
 	SetCycle( 0 );
+
+// ---------------------------------------------------
+// Additions, probably not the best place to put this!
+// ---------------------------------------------------
+	AddGlowEffect();
+	SetGlowEffectColor(0.76f, 0.76f, 0.76f);
 }
 
 //-----------------------------------------------------------------------------

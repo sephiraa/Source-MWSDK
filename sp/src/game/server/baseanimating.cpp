@@ -197,6 +197,16 @@ BEGIN_DATADESC( CBaseAnimating )
 
  // DEFINE_FIELD( m_boneCacheHandle, memhandle_t ),
 
+// ----------
+// Additions.
+// ----------
+	DEFINE_INPUTFUNC(FIELD_VOID, "SetGlowEnabled", SetGlowEnabled),
+	DEFINE_INPUTFUNC(FIELD_VOID, "SetGlowDisabled", SetGlowDisabled),
+	DEFINE_INPUTFUNC(FIELD_FLOAT, "SetGlowColorRed", SetGlowColorRed),
+	DEFINE_INPUTFUNC(FIELD_FLOAT, "SetGlowColorGreen", SetGlowColorGreen),
+	DEFINE_INPUTFUNC(FIELD_FLOAT, "SetGlowColorBlue", SetGlowColorBlue),
+	DEFINE_INPUTFUNC(FIELD_COLOR32, "SetGlowColor", SetGlowColor),
+
 	DEFINE_INPUTFUNC( FIELD_VOID, "Ignite", InputIgnite ),
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "IgniteLifetime", InputIgniteLifetime ),
 	DEFINE_INPUTFUNC( FIELD_INTEGER, "IgniteNumHitboxFires", InputIgniteNumHitboxFires ),
@@ -227,6 +237,15 @@ void *SendProxy_ClientSideAnimation( const SendProp *pProp, const void *pStruct,
 
 // SendTable stuff.
 IMPLEMENT_SERVERCLASS_ST(CBaseAnimating, DT_BaseAnimating)
+// ----------
+// Additions.
+// ----------
+#ifdef GLOWS_ENABLE
+	SendPropBool(SENDINFO(m_bGlowEnabled)),
+	SendPropFloat(SENDINFO(m_flGlowR)),
+	SendPropFloat(SENDINFO(m_flGlowG)),
+	SendPropFloat(SENDINFO(m_flGlowB)),
+#endif // GLOWS_ENABLE
 	SendPropInt		( SENDINFO(m_nForceBone), 8, 0 ),
 	SendPropVector	( SENDINFO(m_vecForce), -1, SPROP_NOSCALE ),
 
@@ -288,6 +307,15 @@ CBaseAnimating::CBaseAnimating()
 	m_fadeMaxDist = 0;
 	m_flFadeScale = 0.0f;
 	m_fBoneCacheFlags = 0;
+// ----------
+// Additions.
+// ----------
+#ifdef GLOWS_ENABLE
+	m_bGlowEnabled.Set(false);
+	m_flGlowR.Set(0.76f);
+	m_flGlowG.Set(0.76f);
+	m_flGlowB.Set(0.76f);
+#endif // GLOWS_ENABLE
 }
 
 CBaseAnimating::~CBaseAnimating()
@@ -297,6 +325,69 @@ CBaseAnimating::~CBaseAnimating()
 	UnlockStudioHdr();
 	delete m_pStudioHdr;
 }
+
+// ----------
+// Additions.
+// ----------
+#ifdef GLOWS_ENABLE
+void CBaseAnimating::SetGlowEffectColor(float r, float g, float b)
+{
+	m_flGlowR.Set(r);
+	m_flGlowG.Set(g);
+	m_flGlowB.Set(b);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseAnimating::AddGlowEffect(void)
+{
+	SetTransmitState(FL_EDICT_ALWAYS);
+	m_bGlowEnabled.Set(true);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseAnimating::RemoveGlowEffect(void)
+{
+	m_bGlowEnabled.Set(false);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CBaseAnimating::IsGlowEffectActive(void)
+{
+	return m_bGlowEnabled;
+}
+
+void CBaseAnimating::SetGlowEnabled(inputdata_t& inputdata)
+{
+	m_bGlowEnabled.Set(true);
+}
+void CBaseAnimating::SetGlowDisabled(inputdata_t& inputdata)
+{
+	m_bGlowEnabled.Set(false);
+}
+void CBaseAnimating::SetGlowColorRed(inputdata_t& inputdata)
+{
+	m_flGlowR.Set(inputdata.value.Float());
+}
+void CBaseAnimating::SetGlowColorGreen(inputdata_t& inputdata)
+{
+	m_flGlowG.Set(inputdata.value.Float());
+}
+void CBaseAnimating::SetGlowColorBlue(inputdata_t& inputdata)
+{
+	m_flGlowB.Set(inputdata.value.Float());
+}
+void CBaseAnimating::SetGlowColor(inputdata_t& inputdata)
+{
+	color32 color = inputdata.value.Color32();
+	SetGlowEffectColor(color.r / 255, color.g / 255, color.b / 255);
+}
+#endif // GLOWS_ENABLE
 
 void CBaseAnimating::Precache()
 {

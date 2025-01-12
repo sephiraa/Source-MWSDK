@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Added glow outlines to all NPCs.
 //
 //=============================================================================//
 
@@ -6926,6 +6926,12 @@ void CAI_BaseNPC::NPCInit ( void )
 	SetDeathPoseFrame( 0 );
 
 	m_EnemiesSerialNumber = -1;
+
+// ----------
+// Additions.
+// ----------
+	AddGlowEffect();
+	SetGlowEffectColor(0.76f, 0, 0);
 }
 
 //-----------------------------------------------------------------------------
