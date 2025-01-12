@@ -2,7 +2,7 @@
 //
 // Purpose: Base explosion effect
 //
-// $NoKeywords: $
+// $NoKeywords: $FixedByTheMaster974
 //=============================================================================//
 #include "cbase.h"
 #include "fx_explosion.h"
@@ -19,6 +19,11 @@
 #include "fx_line.h"
 #include "fx_water.h"
 
+// -------------------------------------------------
+// Addition for creating particle system explosions.
+// -------------------------------------------------
+#include "particle_parse.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -34,6 +39,11 @@ CLIENTEFFECT_MATERIAL( "particle/particle_smokegrenade" )
 CLIENTEFFECT_MATERIAL( "particle/particle_smokegrenade1" )
 CLIENTEFFECT_MATERIAL( "effects/splash3" )
 CLIENTEFFECT_MATERIAL( "effects/splashwake1" )
+
+// -----------------------------------------------------
+// Custom materials for the explosion, if you want that.
+// -----------------------------------------------------
+CLIENTEFFECT_MATERIAL("effects/energyball")
 CLIENTEFFECT_REGISTER_END()
 
 //
@@ -187,6 +197,10 @@ void C_BaseExplosionEffect::Create( const Vector &position, float force, float s
 	{
 		// UNDONE: Make core size parametric to scale or remove scale?
 		CreateCore();
+// -------------------------------------------------------------------------------------
+// Create a particle system explosion, if you have one. Remove the above line if you do.
+// -------------------------------------------------------------------------------------
+		// DispatchParticleEffect("ExplosionName", m_vecOrigin, vec3_angle);
 	}
 
 	CreateDebris();
@@ -501,6 +515,10 @@ void C_BaseExplosionEffect::CreateCore( void )
 	if ( m_Material_FireCloud == NULL )
 	{
 		m_Material_FireCloud = pSimple->GetPMaterial( "effects/fire_cloud2" );
+// ----------------------------------------
+// This will change the explosion material.
+// ----------------------------------------
+		// m_Material_FireCloud = pSimple->GetPMaterial( "effects/energyball" );
 	}
 
 #ifndef _XBOX

@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: Responsible for drawing the scene
+// Purpose: Responsible for drawing the scene. Thanks to WadDelZ for the code!
 //
 //===========================================================================//
 
@@ -184,6 +184,22 @@ IntroData_t *g_pIntroData = NULL;
 static bool	g_bRenderingView = false;			// For debugging...
 static int g_CurrentViewID = VIEW_NONE;
 bool g_bRenderingScreenshot = false;
+
+// --------------------------------------------------------------------
+// Additions, enable this if you want to add a cinematic camera effect.
+// --------------------------------------------------------------------
+ConVar r_camera_cinematic("r_camera_cinematic", "0", FCVAR_CLIENTDLL);
+ConVar r_camera_cinematic_lag_origin("r_camera_cinematic_lag_origin", "1", FCVAR_CLIENTDLL);
+ConVar r_camera_cinematic_lag_origin_amount("r_camera_cinematic_lag_origin_amount", "0.025", FCVAR_CLIENTDLL);
+ConVar r_camera_cinematic_lag_angles("r_camera_cinematic_lag_angles", "1", FCVAR_CLIENTDLL);
+ConVar r_camera_cinematic_lag_angles_amount("r_camera_cinematic_lag_angles_amount", "0.025", FCVAR_CLIENTDLL);
+ConVar r_camera_cinematic_viewmodel_fix("r_camera_cinematic_viewmodel_fix", "1", FCVAR_CLIENTDLL);
+
+// --------------------------------------------------------------
+// Enable this if you want to add a claustrophobic camera effect.
+// --------------------------------------------------------------
+ConVar r_claustrophobia("r_claustrophobia", "0", FCVAR_CLIENTDLL);
+ConVar r_claustrophobia_amount("r_claustrophobia_amount", "6.5", FCVAR_CLIENTDLL);
 
 
 #define FREEZECAM_SNAPSHOT_FADE_SPEED 340
@@ -935,6 +951,7 @@ CViewRender::CViewRender()
 	m_BaseDrawFlags = 0;
 	m_pActiveRenderer = NULL;
 	m_pCurrentlyDrawingEntity = NULL;
+	m_HasPrevViewSetup = false; // Addition.
 }
 
 
@@ -1905,13 +1922,39 @@ const char *COM_GetModDirectory();
 
 //-----------------------------------------------------------------------------
 // Purpose: This renders the entire 3D view and the in-game hud/viewmodel
-// Input  : &view - 
+// Input  : &tmpview - formerly view
 //			whatToDraw - 
 //-----------------------------------------------------------------------------
 // This renders the entire 3D view.
-void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatToDraw )
+void CViewRender::RenderView( const CViewSetup &tmpview, int nClearFlags, int whatToDraw )
 {
 	m_UnderWaterOverlayMaterial.Shutdown();					// underwater view will set
+
+// ----------
+// Additions.
+// ----------
+	CViewSetup view = tmpview;
+	CViewSetup tmpViewmodelView = view;
+
+	if (r_camera_cinematic.GetBool())
+	{
+		if (!m_HasPrevViewSetup)
+		{
+			m_PrevViewSetup = view;
+			m_HasPrevViewSetup = true;
+		}
+
+		if (r_camera_cinematic_lag_origin.GetBool() && r_camera_cinematic_lag_origin_amount.GetFloat() > 0)
+			view.origin = Lerp(r_camera_cinematic_lag_origin_amount.GetFloat(), m_PrevViewSetup.origin, view.origin);
+
+		if (r_camera_cinematic_lag_angles.GetBool() && r_camera_cinematic_lag_angles_amount.GetFloat() > 0)
+			view.angles = Lerp(r_camera_cinematic_lag_angles_amount.GetFloat(), m_PrevViewSetup.angles, view.angles);
+	}
+
+	if (r_claustrophobia.GetBool())
+	{
+		view.m_flAspectRatio = r_claustrophobia_amount.GetFloat();
+	}
 
 	m_CurrentView = view;
 
@@ -2039,8 +2082,9 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 
 		GetClientModeNormal()->DoPostScreenSpaceEffects( &view );
 
-		// Now actually draw the viewmodel
-		DrawViewModels( view, whatToDraw & RENDERVIEW_DRAWVIEWMODEL );
+		// Now actually draw the viewmodel, accounting for changes due to the cinematic camera.
+//		DrawViewModels( view, whatToDraw & RENDERVIEW_DRAWVIEWMODEL );
+		DrawViewModels((r_camera_cinematic_viewmodel_fix.GetBool()) ? tmpViewmodelView : view, whatToDraw & RENDERVIEW_DRAWVIEWMODEL);
 
 		DrawUnderwaterOverlay();
 
@@ -2340,6 +2384,7 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 
 	render->PopView( GetFrustum() );
 	g_WorldListCache.Flush();
+	m_PrevViewSetup = view; // Addition.
 }
 
 //-----------------------------------------------------------------------------

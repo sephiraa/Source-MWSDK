@@ -1243,10 +1243,31 @@ void C_BasePlayer::UpdateFlashlight()
 		}
 
 		Vector vecForward, vecRight, vecUp;
-		EyeVectors( &vecForward, &vecRight, &vecUp );
+// -------------------------------------------------------------------------------------
+// Addition, change this if you want the flashlight to emit from a viewmodel attachment!
+// -------------------------------------------------------------------------------------
+		C_BaseViewModel* vm = GetViewModel();
+		if (!vm)
+		{
+			EyeVectors(&vecForward, &vecRight, &vecUp);
 
-		// Update the light with the new position and direction.		
-		m_pFlashlight->UpdateLight( EyePosition(), vecForward, vecRight, vecUp, FLASHLIGHT_DISTANCE );
+			// Update the light with the new position and direction.		
+			m_pFlashlight->UpdateLight(EyePosition(), vecForward, vecRight, vecUp, FLASHLIGHT_DISTANCE);
+		}
+		else
+		{
+			Vector vecOrigin;
+			QAngle angles;
+
+// ----------------------------------------------------------
+// Change this to a real attachment point, i.e. "flashlight".
+// ----------------------------------------------------------
+			int attachment = vm->LookupAttachment("muzzle");
+			vm->GetAttachment(attachment, vecOrigin, angles);
+			AngleVectors(angles, &vecForward, &vecRight, &vecUp);
+			
+			m_pFlashlight->UpdateLight(vecOrigin, vecForward, vecRight, vecUp, FLASHLIGHT_DISTANCE);
+		}
 	}
 	else if (m_pFlashlight)
 	{

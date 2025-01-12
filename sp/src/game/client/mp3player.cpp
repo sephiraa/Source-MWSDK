@@ -6,7 +6,7 @@
 
 #include "cbase.h"
 
-#if 0
+#if 1 // Modification, change this to 0 to remove the in-game MP3 player.
 #include "mp3player.h"
 #include "KeyValues.h"
 #include "filesystem.h"

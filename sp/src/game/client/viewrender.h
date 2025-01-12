@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Adds cinematic/claustrophobic camera. Thanks to WadDelZ for the code!
 //
 //===========================================================================//
 
@@ -317,6 +317,12 @@ public:
 
 	void			AddViewToScene( CRendering3dView *pView ) { m_SimpleExecutor.AddView( pView ); }
 protected:
+// ----------
+// Additions.
+// ----------
+	bool m_HasPrevViewSetup;
+	CViewSetup m_PrevViewSetup;
+
 	// Sets up the view parameters for all views (left, middle and right eyes).
     void            SetUpViews();
 
@@ -360,7 +366,7 @@ public:
 
 	// Render functions
 	virtual	void	Render( vrect_t *rect );
-	virtual void	RenderView( const CViewSetup &view, int nClearFlags, int whatToDraw );
+	virtual void	RenderView( const CViewSetup &tmpview, int nClearFlags, int whatToDraw ); // Changed view to tmpview.
 	virtual void	RenderPlayerSprites();
 	virtual void	Render2DEffectsPreHUD( const CViewSetup &view );
 	virtual void	Render2DEffectsPostHUD( const CViewSetup &view );

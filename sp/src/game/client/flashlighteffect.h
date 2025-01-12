@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Adds flashlight/headlight lag. Thanks to WadDelZ for the code!
 //
 //=============================================================================//
 
@@ -29,6 +29,12 @@ public:
 	void SetFlashlightHandle( ClientShadowHandle_t Handle ) { m_FlashlightHandle = Handle;	}
 	
 protected:
+// ---------
+// Addtions.
+// ---------
+	Quaternion m_quatPrevOrientation;
+	bool m_hasPrevOrientation;
+	void HandleFlashlightLag(FlashlightState_t& state);
 
 	void LightOff();
 	void LightOffOld();
