@@ -897,40 +897,6 @@ vgui::Panel *CVGuiScreenPanel::CreateControlByName(const char *controlName)
 	return BaseClass::CreateControlByName( controlName );
 }
 
-#ifndef WIN32
-// ----------------------------------------------------------------------------------------------------------------------------------
-// The itoa function is not defined on Linux, so I'll leave this here for the file to compile properly. Thanks to user ArkM for this!
-// Sourced from: https://www.daniweb.com/programming/software-development/threads/148080/itoa-function-or-similar-in-linux
-// ----------------------------------------------------------------------------------------------------------------------------------
-/* The Itoa code is in the public domain */
-char* itoa(int value, char* str, int radix) {
-    static char dig[] =
-        "0123456789"
-        "abcdefghijklmnopqrstuvwxyz";
-    int n = 0, neg = 0;
-    unsigned int v;
-    char* p, *q;
-    char c;
-
-    if (radix == 10 && value < 0) {
-        value = -value;
-        neg = 1;
-    }
-    v = value;
-    do {
-        str[n++] = dig[v%radix];
-        v /= radix;
-    } while (v);
-    if (neg)
-        str[n++] = '-';
-    str[n] = '\0';
-
-    for (p = str, q = p + (n-1); p < q; ++p, --q)
-        c = *p, *p = *q, *q = c;
-    return str;
-}
-#endif
-
 //-----------------------------------------------------------------------------
 // Purpose: Called when the user presses a button
 //-----------------------------------------------------------------------------
@@ -941,7 +907,8 @@ void CVGuiScreenPanel::OnCommand( const char *command)
 		|| stricmp(command, "out2") == 0)
 	{
 		char entindex[8];
-		itoa(this->GetEntity()->entindex(), entindex, 10); // Radix is base 10 (decimal)
+//		itoa(this->GetEntity()->entindex(), entindex, 10); // Radix is base 10 (decimal)
+		Q_snprintf(entindex, sizeof(entindex), "%i", GetEntity()->entindex()); // I think this should work, as itoa is undefined on Linux.
 		char newcommand[16] = { ' ' };
 		strcat(newcommand, command);
 		strcat(newcommand, " ");
