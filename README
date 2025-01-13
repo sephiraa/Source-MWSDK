@@ -10,6 +10,12 @@ Source Shorts can be found here → https://www.youtube.com/playlist?list=PL8tDE
 
 Includes Dynamic RTT Shadows feature from Saul Rennison and Gamepad UI feature from Joshua Ashton / DasMaddi, with some assistance from WadDelZ!
 
+------------
+Linux Issues
+------------
+
+The Gamepad UI doesn't work on Linux, the PostMessageToAllSiblingsOfType function in Panel.h causes errors regarding an incomplete use of the KeyValues class, plus the rest of the Gamepad UI code has issues. As a result, I have disabled the Gamepad UI code from being compiled on Linux until a fix can be implemented. I have also performed a few minor changes to some of the files that caused issues on Linux but not on Windows i.e. (client/server)_(hl2/episodic).vpc files.
+
 ------------------------------
 Source SDK License Information
 ------------------------------
