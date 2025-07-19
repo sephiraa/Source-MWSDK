@@ -1,25 +1,9 @@
----------------------------------------------------------------------------
-If you use any of these modified files, please give credit to TheMaster974!
----------------------------------------------------------------------------
+The SEMWSDKr - Source Engine Moby World Software Development Kit repository.
 
-A fork of the 2013 SDK, with additions/modifications from my YouTube videos linked below. This (currently) covers all Singleplayer changes from tutorials 0.5 to 31 (excluding 6/7/8/15/24 i.e. shader stuff) and Source Shorts 1 to 18 (excluding 2/7/8/10/15/17 i.e. Multiplayer stuff, using leaked engine code and Fake CSM from celisej567). Multiplayer changes will come eventually. Let me know if there are any issues!
-
-Valve Source Code Tutorials can be found here → https://www.youtube.com/playlist?list=PL8tDEPB6h7Lk0YtRtt4k1h_Thgj1ZA2dX
-
-Source Shorts can be found here → https://www.youtube.com/playlist?list=PL8tDEPB6h7LnslIGAYRsmS-wS5MeorktV
-
-Includes Dynamic RTT Shadows feature from Saul Rennison and Gamepad UI feature from Joshua Ashton / DasMaddi, with some assistance from WadDelZ!
 
 ------------
-Linux Issues
+Licensing
 ------------
-
-The Gamepad UI doesn't work on Linux, the PostMessageToAllSiblingsOfType function in Panel.h causes errors regarding an incomplete use of the KeyValues class, plus the rest of the Gamepad UI code has issues. As a result, I have disabled the Gamepad UI code from being compiled on Linux until a fix can be implemented. I have also performed a few minor changes to some of the files that caused issues on Linux but not on Windows i.e. (client/server)_(hl2/episodic).vpc files.
-
-------------------------------
-Source SDK License Information
-------------------------------
-
 SOURCE 1 SDK LICENSE
 
 Source SDK Copyright(c) Valve Corp.  
@@ -63,3 +47,6 @@ copyright notice and the following:
        
 If you would like to use the SDK for a commercial purpose, please contact Valve at 
 sourceengine@valvesoftware.com.
+
+Credits: 
+TheMaster974 [Modified Source sdk files]
